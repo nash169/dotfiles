@@ -7,7 +7,7 @@ source ../utils.sh
 func_category Accessories
 
 list=(
-variety
+# variety
 )
 
 count=0
@@ -22,9 +22,8 @@ done
 func_category Development
 
 list=(
-atom
-meld
-sublime-text-dev
+# meld
+neovim
 )
 
 count=0
@@ -41,7 +40,7 @@ func_category Graphics
 list=(
 gimp
 inkscape
-nomacs
+# nomacs
 )
 
 count=0
@@ -85,10 +84,26 @@ done
 
 ###############################################################################
 
+func_category Social
+
+list=(
+telegram-desktop
+)
+
+count=0
+for name in "${list[@]}" ; do
+	count=$[count+1]
+	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
+	func_install $name
+done
+
+###############################################################################
+
 func_category Office
 
 list=(
-evince
+# evince
+zotero
 )
 
 count=0
@@ -103,8 +118,11 @@ done
 func_category System
 
 list=(
-dconf-editor
-arc-gtk-theme
+# dconf-editor
+# arc-gtk-theme
+# downgrade
+# pamac-aur
+gparted
 )
 
 count=0
@@ -119,15 +137,15 @@ done
 func_category Unpack
 
 list=(
-unace
-unrar
-zip
-unzip
-sharutils
-uudeview
-arj
-cabextract
-file-roller
+# unace
+# unrar
+# zip
+# unzip
+# sharutils
+# uudeview
+# arj
+# cabextract
+# file-roller
 )
 
 count=0
@@ -139,23 +157,16 @@ done
 
 ###############################################################################
 
-func_category Fonts
+func_category Utilities
 
 list=(
-arcolinux-fonts-git
-awesome-terminal-fonts
-adobe-source-sans-pro-fonts
-cantarell-fonts
-noto-fonts
-ttf-bitstream-vera
-ttf-dejavu
-ttf-droid
-ttf-hack
-ttf-inconsolata
-ttf-liberation
-ttf-roboto
-ttf-ubuntu-font-family
-tamsyn-font
+stow
+keychain
+wget
+curl
+# xbindkeys
+# xautomation
+# watchman
 )
 
 count=0
@@ -167,8 +178,25 @@ done
 
 ###############################################################################
 
-tput setaf 11;
-echo "################################################################"
-echo "Software has been installed"
-echo "################################################################"
-echo;tput sgr0
+func_category Terminal
+
+list=(
+alacritty
+fzf
+tmux
+exa
+zsh
+zsh-completions
+zsh-syntax-highlighting
+)
+
+count=0
+for name in "${list[@]}" ; do
+	count=$[count+1]
+	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
+	func_install $name
+done
+
+wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sh
+
+###############################################################################
