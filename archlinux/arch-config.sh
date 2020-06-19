@@ -1,119 +1,12 @@
-#!/bin/bash
-
-set -e
-
-# USE ALL CORES & UPDATE
-#==============================================================
-numberofcores=$(grep -c ^processor /proc/cpuinfo)
-
-if [ $numberofcores -gt 1 ]
-then
-        echo "You have " $numberofcores" cores."
-        echo "Changing the makeflags for "$numberofcores" cores."
-        sudo sed -i 's/#MAKEFLAGS="-j2"/MAKEFLAGS="-j'$(($numberofcores+1))'"/g' /etc/makepkg.conf;
-        echo "Changing the compression settings for "$numberofcores" cores."
-        sudo sed -i 's/COMPRESSXZ=(xz -c -z -)/COMPRESSXZ=(xz -c -T '"$numberofcores"' -z -)/g' /etc/makepkg.conf
-else
-        echo "No change."
+read -p "Do you want to install tlp for battery life (laptops)?[y/n] " name
+if [ "$name" == "y" ]; then
+    sudo pacman -S --noconfirm --needed tlp
+    sudo systemctl enable tlp.service
+    sudo systemctl start tlp.service
 fi
 
-sudo pacman -Syyu --noconfirm
 
 
-# DESKTOP (TILING WINDOW) MANAGER
-#==============================================================
-sudo pacman -S bspwm sxhkd --noconfirm --needed
-
-
-# LOGIN MANAGER
-#==============================================================
-# sudo pacman -S --noconfirm --needed lightdm
-# sudo pacman -S --noconfirm --needed arcolinux-lightdm-gtk-greeter arcolinux-lightdm-gtk-greeter-settings
-# sudo pacman -S --noconfirm --needed arcolinux-wallpapers-git
-
-# sudo systemctl enable lightdm.service -f
-# sudo systemctl set-default graphical.target
-
-
-# SOUND
-#==============================================================
-sudo pacman -S pulseaudio --noconfirm --needed
-sudo pacman -S pulseaudio-alsa --noconfirm --needed
-sudo pacman -S pavucontrol  --noconfirm --needed
-sudo pacman -S alsa-utils alsa-plugins alsa-lib alsa-firmware --noconfirm --needed
-sudo pacman -S gstreamer --noconfirm --needed
-sudo pacman -S gst-plugins-good gst-plugins-bad gst-plugins-base gst-plugins-ugly --noconfirm --needed
-sudo pacman -S volumeicon --noconfirm --needed
-sudo pacman -S playerctl --noconfirm --needed
-
-
-# BLUETOOTH
-#==============================================================
-sudo pacman -S --noconfirm --needed pulseaudio-bluetooth
-sudo pacman -S --noconfirm --needed bluez
-sudo pacman -S --noconfirm --needed bluez-libs
-sudo pacman -S --noconfirm --needed bluez-utils
-sudo pacman -S --noconfirm --needed blueberry
-
-sudo systemctl enable bluetooth.service
-sudo systemctl start bluetooth.service
-
-sudo sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
-
-# reboot your system then ...
-# bluetooth icon in bottom right corner
-# change to have a2dp if needed
-# read -n 1 -s -r -p "Press any key to continue"
-
-# Fix bluetooth switch not working
-# Adding the current user to the group rfkill in order to be able to switch blueberry on and off
-# https://github.com/linuxmint/blueberry/issues/75
-sudo usermod  -a -G rfkill $USER
-
-
-# PRINTER
-#==============================================================
-sudo pacman -S --noconfirm --needed cups cups-pdf
-
-#first try if you can print without foomatic
-#sudo pacman -S foomatic-db-engine --noconfirm --needed
-#sudo pacman -S foomatic-db foomatic-db-ppds foomatic-db-nonfree-ppds foomatic-db-gutenprint-ppds --noconfirm --needed
-sudo pacman -S ghostscript gsfonts gutenprint --noconfirm --needed
-sudo pacman -S gtk3-print-backends --noconfirm --needed
-sudo pacman -S libcups --noconfirm --needed
-sudo pacman -S hplip --noconfirm --needed
-sudo pacman -S system-config-printer --noconfirm --needed
-
-sudo systemctl enable org.cups.cupsd.service
-
-
-# NETWORK DISCOVERY
-#==============================================================
-sudo pacman -S --noconfirm --needed avahi
-sudo systemctl enable avahi-daemon.service
-sudo systemctl start avahi-daemon.service
-
-#shares on a mac
-sudo pacman -S --noconfirm --needed nss-mdns
-
-#shares on a linux
-sudo pacman -S --noconfirm --needed gvfs-smb
-
-#change nsswitch.conf for access to nas servers
-#original line comes from the package filesystem
-#hosts: files mymachines myhostname resolve [!UNAVAIL=return] dns
-#ArcoLinux line
-#hosts: files mymachines resolve [!UNAVAIL=return] mdns dns wins myhostname
-
-#first part
-sudo sed -i 's/files mymachines myhostname/files mymachines/g' /etc/nsswitch.conf
-#last part
-sudo sed -i 's/\[\!UNAVAIL=return\] dns/\[\!UNAVAIL=return\] mdns dns wins myhostname/g' /etc/nsswitch.conf
-
-
-# TLP FOR BATTERY LIFE
-#==============================================================
-sh tlp_battery.sh
 
 
 # SOFTWARE
