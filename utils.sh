@@ -1,6 +1,6 @@
 #!/bin/bash
 
-install_package() {
+package_install() {
     # checking if application is already installed
 	if pacman -Qi $1 &> /dev/null; then
 		tput setaf 2
