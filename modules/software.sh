@@ -4,7 +4,7 @@ source ../utils.sh
 
 ###############################################################################
 
-func_category Accessories
+package_category Accessories
 
 list=(
 # variety
@@ -14,12 +14,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category Development
+package_category Development
 
 list=(
 # meld
@@ -30,12 +30,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category Graphics
+package_category Graphics
 
 list=(
 gimp
@@ -47,12 +47,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category Internet
+package_category Internet
 
 list=(
 chromium
@@ -64,12 +64,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category Multimedia
+package_category Multimedia
 
 list=(
 vlc
@@ -79,12 +79,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category Social
+package_category Social
 
 list=(
 telegram-desktop
@@ -94,12 +94,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category Office
+package_category Office
 
 list=(
 # evince
@@ -110,12 +110,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category System
+package_category System
 
 list=(
 # dconf-editor
@@ -129,12 +129,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category Unpack
+package_category Unpack
 
 list=(
 # unace
@@ -152,12 +152,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category Utilities
+package_category Utilities
 
 list=(
 stow
@@ -173,12 +173,12 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 ###############################################################################
 
-func_category Terminal
+package_category Terminal
 
 list=(
 alacritty
@@ -194,7 +194,7 @@ count=0
 for name in "${list[@]}" ; do
 	count=$[count+1]
 	tput setaf 3;echo "Installing package nr.  "$count " " $name;tput sgr0;
-	func_install $name
+	package_install $name
 done
 
 wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sh
