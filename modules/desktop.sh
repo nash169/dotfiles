@@ -8,14 +8,11 @@ echo "Installation of the core software"
 
 list=(
 # lightdm
-# thunar
-# thunar-archive-plugin
-# thunar-volman
 bspwm
 sxhkd
 dmenu
-# xdo
-# feh
+xdo
+feh
 # sutils-git
 # xtitle-git
 polybar
