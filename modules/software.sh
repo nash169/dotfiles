@@ -60,7 +60,7 @@ done
 package_category Internet
 
 list=(
-brave-bin
+# brave-bin
 qbittorrent
 youtube-dl
 )
@@ -78,7 +78,7 @@ package_category Multimedia
 
 list=(
 mpv #vlc
-spotify
+# spotify
 )
 
 count=0
@@ -93,8 +93,8 @@ done
 package_category Social
 
 list=(
-telegram-desktop
-whatsapp-nativefier
+# telegram-desktop
+# whatsapp-nativefier
 )
 
 count=0
@@ -110,7 +110,7 @@ package_category Office
 
 list=(
 # evince
-zotero
+# zotero
 zathura
 )
 
@@ -189,7 +189,7 @@ done
 package_category Terminal
 
 list=(
-alacritty
+# alacritty
 fzf
 tmux
 exa
@@ -198,6 +198,12 @@ zsh-completions
 zsh-syntax-highlighting
 zsh-autosuggestions
 neofetch
+nodejs
+xsel
+yarn
+python-ueberzug-git
+xclip
+ripgrep
 )
 
 count=0
@@ -209,6 +215,7 @@ done
 
 wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O - | sh
 
+chsh -s $(which zsh)
 ###############################################################################
 
 package_category Fonts
