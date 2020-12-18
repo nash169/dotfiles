@@ -19,3 +19,5 @@ xorg-xrandr
 xorg-xrdb
 xorg-xset
 xorgproto
+xorg-xdpyinfo
+xcompmgr
