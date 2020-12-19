@@ -1,0 +1,170 @@
+ %!TEX program = pdflatex
+
+\documentclass[12pt]{article}
+
+\title{Linux Configuration}
+\author{Bernardo Fichera}
+\date{\today}
+
+\usepackage{listings}
+\usepackage{hyperref}
+
+\begin{document}
+
+\maketitle
+
+\section*{Arch Linux installation}
+The \href{https://wiki.archlinux.org/index.php/Installation_guide}{Arch wiki} for the installation of OS seems to be pretty complete. However minor things are missing especially for what concern special settings for installing Arch on Mac.
+
+\subsection*{Flash USB}
+For flashing an USB key using \textbf{dd} under linux the command seems to be the following
+\begin{lstlisting}[language=bash]
+    $ dd bs=4M if=path/to/archlinux.iso 
+    of=/dev/sdx status=progress oflag=sync
+\end{lstlisting}
+However that fails on macOS and the above command has to be substituted with
+\begin{lstlisting}[language=bash]
+    $ dd bs=4m if=path/to/archlinux.iso 
+    of=/dev/sdx; sync
+\end{lstlisting}
+
+\subsection*{Setting the font}
+Consol mode installation might suffer of microscopic text on high res display. In order to adjust the font use
+\begin{lstlisting}[language=bash]
+    $ setfont latarcyrheb-sun32 (setfont sun12x22)
+\end{lstlisting}
+
+\subsection*{Interrupt issue on Mac}
+It seems that there is something wrong with the interrupts on Mac. To find out which one is going crazy run
+\begin{lstlisting}[language=bash]
+    $ grep . -r /sys/firmware/acpi/interrupts/gpe*
+\end{lstlisting}
+Disable it
+\begin{lstlisting}[language=bash]
+    $ echo "disable" > 
+    /sys/firmware/acpi/interrupts/gpe06
+\end{lstlisting}
+This will automatically disable by the bootloader options when configure. Although at the moment the solution is for systemd-boot and not the more common grub. Check how to solve it for grub if the problem persist.
+
+\subsection*{Internet connection}
+The easiest solution is ubs tethering. Use either the phone or a portable router. In order to detect the network interfaces run
+\begin{lstlisting}[language=bash]
+    $ ip link
+\end{lstlisting}
+To connect to a specific device
+\begin{lstlisting}[language=bash]
+    $ dhcpcd <your_interface_name>
+\end{lstlisting}
+
+\subsection*{Create partitions}
+For listing the devices
+\begin{lstlisting}[language=bash]
+    $ fdisk -l
+\end{lstlisting}
+and then simply
+\begin{lstlisting}[language=bash]
+    $ fdisk /dev/sdX
+\end{lstlisting}
+to configure the device. Everything is pretty clear; just remember to set the correct type for the EFI (and SWAP) partition otherwise it is not possible to install the bootloader.
+
+\subsection*{Format partitions}
+This are the commands to format all the necessary partitions
+\begin{lstlisting}[language=bash]
+    $ mkfs.fat -F32 /dev/efi_partition
+    $ mkfs.ext4 /dev/root_partition
+    $ mkswap /dev/swap_partition
+\end{lstlisting}
+
+\subsection*{Mount partitions}
+To mount the partitions
+\begin{lstlisting}[language=bash]
+    $ mount /dev/root_partition /mnt
+    $ mkdir -p /mnt/efi && mount /dev/efi_partition /mnt/efi
+\end{lstlisting}
+and then activate the swap as explained in the Arch wiki.
+
+\subsection*{System installation}
+Pretty much the same of the wiki; just add a couple packages
+\begin{lstlisting}[language=bash]
+    $ pacstrap /mnt base base-devel linux linux-firmware git
+\end{lstlisting}
+After having generated the /etc/fstab one tutorial suggests to add the following line to the file
+\begin{lstlisting}[language=bash]
+    rw,relatime,data=ordered,discard
+\end{lstlisting}
+Not sure how important it is. Follow the wiki for a while. The only addition is to edit \textbf{/etc/vconsole.conf} if you want to keep the font settings with
+\begin{lstlisting}[language=bash]
+    FONT=latarcyrheb-sun32
+\end{lstlisting}
+
+\subsection*{Create user}
+If you want to create another user other than root run
+\begin{lstlisting}
+    $ useradd -m -g users -G wheel -s /bin/bash <USER> && passwd <USER>
+\end{lstlisting}
+
+\subsection*{Mac specific modules}
+We need to enable some kernel modules for fan speed and temperature sensors, open \textbf{/etc/modules} file and insert two lines:
+\begin{lstlisting}
+    coretemp
+    applesmc
+\end{lstlisting}
+
+\subsubsection*{Bootloader installation}
+Here I'll report how to install the grub. Although check this \href{https://medium.com/@laurynas.karvelis_95228/install-arch-linux-on-macbook-pro-11-2-retina-install-guide-for-year-2017-2034ceed4cb2}{Install Arch on Mac} in order to see how to setup systemd-boot with the fix for the crazy interrupt.
+Install the following pack for microcode update
+\begin{lstlisting}
+    $ pacman -S  intel-ucode (amd-ucode)
+\end{lstlisting}
+Most tutorial install also other things
+\begin{lstlisting}
+    $ pacman -S  dosfstools os-prober mtools
+\end{lstlisting}
+For sure in order to install the grub you need
+\begin{lstlisting}
+    $ pacman -S  efibootmgr grub
+\end{lstlisting}
+Now you can install the grub
+\begin{lstlisting}
+    $ grub-install --target=x86_64-efi --efi-directory=efi --bootloader-id=grub_uefi
+\end{lstlisting}
+and generate the configuration file
+\begin{lstlisting}
+    $ grub-mkconfig -o /boot/grub/grub.cfg
+\end{lstlisting}
+
+\subsection*{Fix unwanted laptop resume after lid is closed}
+To check run
+\begin{lstlisting}
+    $ cat /proc/acpi/wakeup
+\end{lstlisting}
+To fix the problem edit $/etc/udev/rules.d/90-xhc\_sleep.rules$ adding the following lines
+\begin{lstlisting}
+    # disable wake from S3 on XHC1
+    SUBSYSTEM=="pci", KERNEL=="0000:00:14.0", ATTR{power/wakeup}="disabled"
+\end{lstlisting}
+
+\subsection*{Network}
+If you are using an old mac this are the drivers
+\begin{lstlisting}
+    $ yay -S broadcom-wl
+\end{lstlisting}
+and then set network manager
+\begin{lstlisting}
+    $ sudo systemctl disable dhcpcd
+    $ sudo pacman -S networkmanager network-manager-applet
+    $ sudo systemctl enable NetworkManager
+\end{lstlisting}
+After rebooting you should be able to connect with
+\begin{lstlisting}
+    $ nmcli dev wifi connect <wifi-name> password <password>
+\end{lstlisting}
+
+\section*{Raspberry}
+\begin{lstlisting}
+    raspi-config
+    python-raspberry-gpio
+    python-smbus-git
+    i2c-tools
+\end{lstlisting}
+\end{document}

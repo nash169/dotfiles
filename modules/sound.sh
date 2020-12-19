@@ -9,6 +9,7 @@ echo "Installation of sound software"
 list=(
 pulseaudio
 pulseaudio-alsa
+pulseaudio-bluetooth
 pavucontrol
 alsa-firmware
 alsa-lib

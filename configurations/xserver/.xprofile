@@ -1,0 +1,27 @@
+# Define screen dpi
+declare -i dpi=$(xdpyinfo | grep resolution | sed -r 's/^[^0-9]*([0-9]+).*$/\1/')
+
+# Set keyboard layout
+setxkbmap -layout us # -variant intl
+
+# Adjust keyboard typematic delay and rate
+xset r rate 270 30
+
+# Set HiDPI if dpi lower then 100 dpi
+if [ $dpi -le 100 ]; then
+    # Start Xorg server at this DPI
+    # 96, 120 (25% higher), 144 (50% higher), 168 (75% higher), 192 (100% higher)
+    xrandr --dpi 144
+
+    # Merge & load configuration from .Xresources
+    xrdb -DHIDPI=1 -merge ~/.Xresources
+
+    # Let QT and GTK autodetect retina screen and autoadjust
+    export QT_AUTO_SCREEN_SCALE_FACTOR=1
+    export GDK_SCALE=2
+    export GDK_DPI_SCALE=0.5
+else
+    # Merge & load configuration from .Xresources
+    xrdb -merge ~/.Xresources
+fi
+
