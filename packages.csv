@@ -17,3 +17,4 @@ i,audio,pulseaudio,no comment
 i,audio,pulseaudio-alsa,no comment
 i,audio,pulseaudio-bluetooth,no comment
 i,desktop,xcompmgr,is for transparency
+i,utils,stow,symlink manager

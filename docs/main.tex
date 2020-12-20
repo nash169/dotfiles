@@ -65,7 +65,7 @@ and then simply
 \begin{lstlisting}[language=bash]
     $ fdisk /dev/sdX
 \end{lstlisting}
-to configure the device. Everything is pretty clear; just remember to set the correct type for the EFI (and SWAP) partition otherwise it is not possible to install the bootloader.
+to configure the device. Everything is pretty clear; just remember to set the correct type for the EFI (and SWAP) partition otherwise it is not possible to install the bootloader. Specifically $1 - 23 - 19$ ($EFI System - Linux root (x86-64) - Linux swap$).
 
 \subsection*{Format partitions}
 This are the commands to format all the necessary partitions
