@@ -10,10 +10,3 @@ alias lt='exa -aT --color=always --group-directories-first' # tree listing
 
 # Mount NAS through WebDav
 alias davnas='sudo mount -t davfs http://nasfichera.myqnapcloud.com:80/bernardo_sync /home/bernardo/nas_mount'
-
-# Raisim
-alias raisim='export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RAISIM_DIR/lib'
-
-# ROS
-alias ros='source /home/bernardo/ros/devel/setup.zsh'
-alias cb="cd /home/bernardo/ros/ && catkin build"

@@ -19,32 +19,7 @@ $HOME/.config/polybar/launch.sh &
 #setxkbmap -layout be
 
 #Some ways to set your wallpaper besides variety or nitrogen
-feh --bg-scale ~/.config/bspwm/wall/01.png &
-# feh --bg-fill /usr/share/backgrounds/arcolinux/arco-wallpaper.jpg &
-#feh --randomize --bg-fill ~/Képek/*
-#feh --randomize --bg-fill ~/Dropbox/Apps/Desktoppr/*
+feh --bg-scale ~/.config/bspwm/walls/01.png &
 
 xsetroot -cursor_name left_ptr &
 run sxhkd &
-
-# conky -c $HOME/.config/bspwm/system-overview &
-# run variety &
-# run nm-applet &
-# run pamac-tray &
-# run xfce4-power-manager &
-# numlockx on &
-# blueberry-tray &
-# picom --config $HOME/.config/bspwm/picom.conf &
-# /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
-# /usr/lib/xfce4/notifyd/xfce4-notifyd &
-# run volumeicon &
-# nitrogen --restore &
-# run caffeine &
-# run vivaldi-stable &
-# run firefox &
-# run thunar &
-# run dropbox &
-# run insync start &
-# run discord &
-# run spotify &
-# run atom &
