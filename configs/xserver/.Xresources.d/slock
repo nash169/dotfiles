@@ -1,0 +1,4 @@
+! colors
+slock.init:         #161821
+slock.input:        #91acd1
+slock.failed:       #e98989

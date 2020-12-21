@@ -1,0 +1,8 @@
+! fonts
+dmenu.font: Hack Nerd Font:size=9
+
+! colors
+dmenu.background:    #161821
+dmenu.foreground:    #c6c8d1
+dmenu.selbackground: #84a0c6
+dmenu.selforeground: #161821

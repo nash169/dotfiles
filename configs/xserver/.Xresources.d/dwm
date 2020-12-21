@@ -1,0 +1,7 @@
+! colors
+dwm.normbordercolor: #161821
+dwm.normbgcolor:     #161821
+dwm.normfgcolor:     #c6c8d1
+dwm.selbordercolor:  #84a0c6
+dwm.selbgcolor:      #84a0c6
+dwm.selfgcolor:      #161821
