@@ -1,0 +1,35 @@
+i,desktop,xorg-server,is the graphical server
+i,desktop,xorg-xwininfo,allows querying information about windows
+i,desktop,xorg-xinit,starts the graphical server
+i,desktop,xorg-xprop,is a tool for detecting window properties
+i,desktop,xorg-xdpyinfo,aids with resolution determination and screen recording
+i,desktop,xorg-xbacklight,enables changing screen brightness levels
+i,desktop,bspwm,is a tiling window manager
+i,desktop,sxhkd,is keyboard shortcut program that goes together with bspwm
+i,desktop,dmenu,is a menu app
+i,desktop,polybar,is a status bar
+i,battery,tlp,improves battery life
+i,networkmanager,handles wifi connection automatically
+i,bluetooth,bluez,no comment
+i,bluetooth,bluez-libs,no comment
+i,bluetooth,bluez-utils,no comment
+i,bluetooth,blueman,is bluetooth manager
+i,audio,pulseaudio,no comment
+i,audio,pulseaudio-alsa,no comment
+i,audio,pulseaudio-bluetooth,no comment
+i,audio,pavucontrol,
+i,audio,alsa-firmware,
+i,audio,alsa-lib,
+i,audio,alsa-plugins,
+i,audio,alsa-utils
+i,desktop,xcompmgr,is for transparency
+i,utils,stow,symbolic link manager
+i,utils,exa,is a better terminal coloring
+i,desktop,feh,handles wallpaper
+i,desktop,xorg-xrandr,no idea
+i,fonts,nerd-fonts-hack,patched font
+i,desktop,xorg-xrdb,something
+i,media,mpd,is a lightweight music daemon
+i,media,mpc,is a terminal interface for mpd
+i,media,mpv,is the patrician's choice video player
+i,utils,awk,to get terminal output

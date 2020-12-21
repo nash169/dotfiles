@@ -1,0 +1,22 @@
+! Set HiDPI correction if needed
+#ifdef HIDPI
+    Xft.dpi: 144
+#endif
+
+! Other useful screen stuff
+Xft.autohint: 0
+Xft.lcdfilter:  lcddefault
+Xft.hintstyle:  hintfull
+Xft.hinting: 1
+Xft.antialias: 1
+Xft.rgba: rgb
+
+! Fonts
+#include ".Xresources.d/fonts"
+
+! Colors
+#include ".Xresources.d/colors"
+
+! Components
+#include ".Xresources.d/dmenu"
+#include ".Xresources.d/slock"
