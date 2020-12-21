@@ -38,9 +38,9 @@ super + y
 super + g
 	bspc node -s biggest.window
 
-#
-# state/flags
-#
+############################################
+#	STATE / FLAGS
+############################################
 
 # set the window state
 super + {t,shift + t,s,f}
@@ -119,3 +119,43 @@ super + alt + shift + {h,j,k,l}
 # move a floating window
 super + {Left,Down,Up,Right}
 	bspc node -v {-20 0,0 20,0 -20,20 0}
+
+############################################
+#	MULTIMEDIA KEYS
+############################################
+
+# Raise volume
+XF86AudioRaiseVolume
+	amixer set Master 10%+
+
+# Lower volume
+XF86AudioLowerVolume
+	amixer set Master 10%-
+
+# Mute
+XF86AudioMute
+	amixer -D pulse set Master 1+ toggle
+
+# Play
+XF86AudioPlay
+	mpc play-pause
+
+# Next
+XF86AudioNext
+	mpc next
+
+# Previous
+XF86AudioPrev
+	mpc prev
+
+# Stop
+XF86AudioStop
+	mpc stop
+
+# Increase brightness
+XF86MonBrightnessUp
+	xbacklight -inc 10
+
+# Decrease brightness
+XF86MonBrightnessDown
+	xbacklight -dec 10
