@@ -33,3 +33,9 @@ i,media,mpd,is a lightweight music daemon
 i,media,mpc,is a terminal interface for mpd
 i,media,mpv,is the patrician's choice video player
 i,utils,awk,to get terminal output
+i,desktop,xorg-xbacklight,control screen brightness
+i,utils,zsh,advanced unix shell
+i,utils,zsh-syntax-highlighting,
+i,utils,zsh-autosuggestions,
+i,utils,exa,ls replacement
+i,utils,keychain,a front-end to ssh-agent
