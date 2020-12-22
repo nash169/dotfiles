@@ -12,9 +12,28 @@ coretemp
 applesmc
 EOT
 
-# Services to block interrupt
-sudo cp ../rsc/disable-gpe4E.service  /etc/systemd/system/
-sudo cp ../rsc/mask-gpe4E.service  /etc/systemd/system/
+# Services to block interrupt (grep . -r /sys/firmware/acpi/interrupts/gpe*)
+sudo tee -a /etc/systemd/system/disable-gpe4E.service > /dev/null <<EOT
+[Unit]
+Description=Disable GPE4E interrupts
+
+[Service]
+ExecStart=/usr/bin/bash -c 'echo "disable" > /sys/firmware/acpi/interrupts/gpe4E'
+
+[Install]
+WantedBy=multi-user.target
+EOT
+
+sudo tee -a /etc/systemd/system/mask-gpe4E.service > /dev/null <<EOT
+[Unit]
+Description=Mask GPE 4E
+
+[Service]
+ExecStart=/usr/bin/bash -c 'echo "mask" > /sys/firmware/acpi/interrupts/gpe4E'
+
+[Install]
+WantedBy=multi-user.target
+EOT
 
 sudo systemctl enable disable-gpe4E.service
 sudo systemctl enable mask-gpe4E.service
@@ -63,13 +82,3 @@ Section "InputClass"
     Option "NaturalScrolling" "true"
 EndSection
 EOT
-
-sudo tee -a /etc/X11/xorg.conf.d/20-intel.conf > /dev/null <<EOT
-Section "Device"
-    Identifier  "Intel Graphics" 
-    Driver      "intel"
-    Option      "Backlight" "intel_backlight"
-EndSection
-EOT
-
-# grep . -r /sys/firmware/acpi/interrupts/gpe*
