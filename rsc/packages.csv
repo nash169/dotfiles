@@ -40,3 +40,4 @@ i,utils,zsh-autosuggestions,
 i,utils,exa,ls replacement
 i,utils,keychain,a front-end to ssh-agent
 i,utils,sed,
+i,utils,xclip,terminal copy

@@ -41,3 +41,35 @@ EOT
 
 # Install Facetime WebCam drivers
 yay -S bcwc-pcie-git
+
+# Touchpad
+sudo tee -a /etc/X11/xorg.conf.d/30-touchpad.conf > /dev/null <<EOT
+Section "InputClass"
+    Identifier "touchpad"
+    Driver "libinput"
+    MatchIsTouchpad "on"
+    Option "Tapping" "on"
+    Option "NaturalScrolling" "true"
+    Option "ClickMethod" "clickfinger"
+    Option "AccelProfile" "flat"
+EndSection
+EOT
+
+sudo tee -a /etc/X11/xorg.conf.d/30-pointer.conf > /dev/null <<EOT
+Section "InputClass"
+    Identifier "pointer"
+    Driver "libinput"
+    MatchIsPointer "on"
+    Option "NaturalScrolling" "true"
+EndSection
+EOT
+
+sudo tee -a /etc/X11/xorg.conf.d/20-intel.conf > /dev/null <<EOT
+Section "Device"
+    Identifier  "Intel Graphics" 
+    Driver      "intel"
+    Option      "Backlight" "intel_backlight"
+EndSection
+EOT
+
+# grep . -r /sys/firmware/acpi/interrupts/gpe*

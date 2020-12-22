@@ -110,7 +110,7 @@ else
 fi
 
 # Keychain for memorizing ssh-agent passphrase
-eval `keychain --eval --nogui -Q -q id_rsa`
+eval `keychain --eval --nogui -Q -q id_ed25519`
 
 # Aliases
 

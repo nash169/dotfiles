@@ -1,0 +1,12 @@
+#!/bin/bash
+
+nmcli connection show
+
+read -p "Do you want to connect to a new network? [y/N]: " input
+
+if ["$input" -eq y] || ["$input" -eq Y]; then
+  read -p "Network name: " net
+  read -s "Network password: " pass
+
+  nmcli device wifi connect $net password $pass
+fi

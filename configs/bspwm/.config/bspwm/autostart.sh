@@ -23,3 +23,4 @@ feh --bg-scale ~/.config/bspwm/walls/01.png &
 
 xsetroot -cursor_name left_ptr &
 run sxhkd &
+run xcompmgr &
