@@ -1,26 +1,38 @@
-#
-# wm independent hotkeys
-#
+#################################################################
+# BSPWM / SXHKD
+#################################################################
 
-# terminal emulator
-super + Return
-	$TERMINAL
-
-# program launcher
-super + @space
-	dmenu_run
+# quit/restart bspwm
+super + alt + {q,r}
+	bspc {quit,wm -r}
 
 # make sxhkd reload its configuration files:
 super + Escape
 	pkill -USR1 -x sxhkd
 
-#
-# bspwm hotkeys
-#
+#################################################################
+# APPLICATIONS
+#################################################################
 
-# quit/restart bspwm
-super + alt + {q,r}
-	bspc {quit,wm -r}
+# program launcher
+super + @space
+	dmenu_run -fn 'Hack Nerd Font Mono-16'
+
+# terminal emulator
+super + Return
+	$TERMINAL
+
+#Browser
+super + b
+    $BROWSER
+
+#File-Manager
+super + shift + Return
+	st -e $FILE
+
+#################################################################
+# WINDOWS MANAGE
+#################################################################
 
 # close and kill
 super + {_,shift + }q
@@ -38,51 +50,72 @@ super + y
 super + g
 	bspc node -s biggest.window
 
-############################################
-#	STATE / FLAGS
-############################################
+# Un/Hide the scratchpad
+super + F12
+  	scratchpad dropdown
 
-# set the window state
-super + {t,shift + t,s,f}
-	bspc node -t {tiled,pseudo_tiled,floating,fullscreen}
+#Hide polybar
+super + y
+    polybar-msg cmd toggle
 
-# set the node flags
-super + ctrl + {m,x,y,z}
-	bspc node -g {marked,locked,sticky,private}
+#################################################################
+# STATE / FLAGS
+#################################################################
 
-#
-# focus/swap
-#
+# Switch the node state on tiled - floating
+super + t
+	bspc query --nodes -n focused.tiled && state=floating || state=tiled; \
+	bspc node --state \~$state
 
-# focus the node in the given direction
+# Switch the node state on tiled - pseudo tiled
+super + p
+	bspc node --state \~pseudo_tiled
+
+# Switch the node state on tiled - fullscreen
+super + f
+	bspc node --state \~fullscreen
+
+# Set marked,locked,sticky,private flag
+super + {m,x,s,z}
+ 	bspc node -g {marked,locked,sticky,private}
+
+#################################################################
+# FOCUS / SWAP
+#################################################################
+
+# Focus the node in the given direction
 super + {_,shift + }{h,j,k,l}
 	bspc node -{f,s} {west,south,north,east}
 
-# focus the node for the given path jump
+# Focus the node for the given path jump
 super + {p,b,comma,period}
 	bspc node -f @{parent,brother,first,second}
 
-# focus the next/previous window in the current desktop
+# Focus the next/previous window in the current desktop
 super + {_,shift + }c
 	bspc node -f {next,prev}.local.!hidden.window
 
-# focus the next/previous desktop in the current monitor
+# Focus the next/previous desktop in the current monitor
 super + bracket{left,right}
 	bspc desktop -f {prev,next}.local
 
-# focus the last node/desktop
+# Focus the last node/desktop
 super + {grave,Tab}
 	bspc {node,desktop} -f last
 
-# focus the older or newer node in the focus history
+# Focus the older or newer node in the focus history
 super + {o,i}
 	bspc wm -h off; \
 	bspc node {older,newer} -f; \
 	bspc wm -h on
 
-# focus or send to the given desktop
+# Focus or send to the given desktop
 super + {_,shift + }{1-9,0}
 	bspc {desktop -f,node -d} '^{1-9,10}'
+
+# Focus/Swap the last node/desktop
+super + {grave,shift + grave,apostrophe}
+	bspc {node -f last.local,desktop -f last,node --swap last}
 
 #
 # preselect
@@ -104,9 +137,9 @@ super + ctrl + space
 super + ctrl + shift + space
 	bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
 
-#
-# move/resize
-#
+#################################################################
+# MOVE / RESIZE
+#################################################################
 
 # expand a window by moving one of its side outward
 super + alt + {h,j,k,l}

@@ -28,3 +28,7 @@ source $HOME/.config/nvim/plug-config/fzf.vim
 
 " Explorer
 " source $HOME/.config/nvim/plug-config/nerdtree.vim
+
+luafile $HOME/.config/nvim/lua/plug-colorizer.lua
+
+source $HOME/.config/nvim/plug-config/rainbow.vim
