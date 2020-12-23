@@ -1,8 +1,0 @@
-[Unit]
-Description=Mask GPE 4E
-
-[Service]
-ExecStart=/usr/bin/bash -c 'echo "mask" > /sys/firmware/acpi/interrupts/gpe4E'
-
-[Install]
-WantedBy=multi-user.target

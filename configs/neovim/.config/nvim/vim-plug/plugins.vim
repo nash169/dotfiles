@@ -17,12 +17,14 @@ call plug#begin('~/.config/nvim/autoload/plugged')
     Plug 'jiangmiao/auto-pairs'
     
     " Themes
-    Plug 'christianchiarulli/onedark.vim'
+    Plug 'joshdick/onedark.vim'
     
     " Intellisense
-    " Plug 'valloric/youcompleteme'
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
     
+    " Code formatter
+    Plug 'Chiel92/vim-autoformat'
+
     " Status Line
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'

@@ -398,3 +398,6 @@ TSWLatexianTemp*
 .vscode
 
 __latexindent_temp.tex
+
+# nvim plugins
+autoload
