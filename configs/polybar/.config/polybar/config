@@ -20,6 +20,7 @@ include-file = $HOME/.config/polybar/bspwm.cfg
 include-file = $HOME/.config/polybar/modules/bspwm.cfg
 
 ; center
+include-file = $HOME/.config/polybar/modules/kernel.cfg
 
 ; right
 include-file = $HOME/.config/polybar/modules/cpu.cfg
