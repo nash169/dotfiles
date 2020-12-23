@@ -1,0 +1,12 @@
+#!/bin/bash
+
+while IFS=, read -r tag category program comment; do
+    if [ $1 = $program ]
+    then
+        echo "The package is in the list"
+        echo "Installation tag: ", $tag
+        echo "Category: ", $category
+        echo "Name: ", $name
+        echo  "Description: ", $comment
+    fi
+done < $2

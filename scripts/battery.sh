@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../utils.sh
+source utils.sh arch.sh
 
 echo "################################################################"
 echo "Installation of battery software"

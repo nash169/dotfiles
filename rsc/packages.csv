@@ -41,3 +41,11 @@ i,utils,exa,ls replacement
 i,utils,keychain,a front-end to ssh-agent
 i,utils,sed,
 i,utils,xclip,terminal copy
+i,base,git,is a control system for tracking file changes
+i,video,mesa
+i,video,i,xf86-video-intel
+i,video,vulkan-intel
+i,pkg,nodejs,
+i,utils,fzf,
+i,development,clang,is a compiler
+

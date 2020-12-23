@@ -1,0 +1,18 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+    then
+        fileName="~/.packages"
+    else
+        fileName="$1/package.csv"
+fi
+
+read -p "Package name: " name
+
+check_list $name $fileName
+
+read -p "Package comment: " comment
+read -p "Package category: " category
+read -p "Package tag: " tag
+
+echo "$tag,$category,$name,"$comment" " >> $fileName
