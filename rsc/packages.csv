@@ -48,4 +48,5 @@ i,video,vulkan-intel
 i,pkg,nodejs,
 i,utils,fzf,
 i,development,clang,is a compiler
+i,development,waf,compiler tool
 
