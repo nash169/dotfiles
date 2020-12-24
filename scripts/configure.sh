@@ -17,5 +17,5 @@ read -p "Insert your email: " mail
 
 ssh-keygen -t ed25519 -C $mail
 
-# Create symbolic link for packages list
-ln -s rsc/packages.csv ~/.packages
+# Install ranger icons
+git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons

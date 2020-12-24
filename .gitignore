@@ -399,5 +399,6 @@ TSWLatexianTemp*
 
 __latexindent_temp.tex
 
-# nvim plugins
-autoload
+# plugins
+configs/neovim/.config/nvim/autoload
+configs/ranger/.config/ranger/plugins
