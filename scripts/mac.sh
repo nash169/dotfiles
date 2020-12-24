@@ -82,3 +82,10 @@ Section "InputClass"
     Option "NaturalScrolling" "true"
 EndSection
 EOT
+
+# Adjust grub font
+sudo grub-mkfont --output=/boot/grub/fonts/HackItalicNerdFontCompleteMono24.pf2 --size=24 /usr/share/fonts/TTF/Hack\ Italic\ Nerd\ Font\ Complete\ Mono.ttf
+
+echo "GRUB_FONT=/boot/grub/fonts/HackItalicNerdFontCompleteMono24.pf2" >> /etc/default/grub
+
+sudo grub-mkconfig -o /boot/grub/grub.cfg

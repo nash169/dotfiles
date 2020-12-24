@@ -126,3 +126,10 @@ alias lt='exa -aT --color=always --group-directories-first' # tree listing
 
 # Mount NAS through WebDav
 alias davnas='sudo mount -t davfs http://nasfichera.myqnapcloud.com:80/bernardo_sync /home/bernardo/nas_mount'
+
+# FZF shortcuts
+source /usr/share/fzf/completion.zsh
+source /usr/share/fzf/key-bindings.zsh
+
+alias pf="pacman -Slq | fzf -m --preview 'cat <(pacman -Si {1}) <(pacman -Fl {1} | awk \"{print \$2}\")' | xargs -ro sudo pacman -S"
+alias yf="yay -Slq | fzf -m --preview 'cat <(yay -Si {1}) <(yay -Fl {1} | awk \"{print \$2}\")' | xargs -ro  yay -S"

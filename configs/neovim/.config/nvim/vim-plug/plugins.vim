@@ -25,6 +25,9 @@ call plug#begin('~/.config/nvim/autoload/plugged')
     " Code formatter
     Plug 'Chiel92/vim-autoformat'
 
+    " Latex Support
+    Plug 'lervag/vimtex'
+
     " Status Line
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'

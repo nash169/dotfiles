@@ -16,7 +16,7 @@ super + Escape
 
 # program launcher
 super + @space
-	dmenu_run -fn 'Hack Nerd Font Mono-16'
+  dmenu_run -fn "Hack Nerd Font Mono-14"
 
 # terminal emulator
 super + Return
@@ -27,7 +27,7 @@ super + b
     $BROWSER
 
 #File-Manager
-super + shift + Return
+super + e
 	st -e $FILE
 
 #################################################################
@@ -51,7 +51,7 @@ super + g
 	bspc node -s biggest.window
 
 # Un/Hide the scratchpad
-super + F12
+super + u
   	scratchpad dropdown
 
 #Hide polybar

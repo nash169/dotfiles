@@ -49,4 +49,8 @@ i,pkg,nodejs,
 i,utils,fzf,
 i,development,clang,is a compiler
 i,development,waf,compiler tool
-
+i,math,eigen,linear algebra library
+i,utils,ueberzug,
+i,utis,ripgrep,
+i,editing,texlive-core,It is the core of latex 
+i,utilis,xdotool,I'm using in the scratchpad binary 

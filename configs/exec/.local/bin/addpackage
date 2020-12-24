@@ -2,14 +2,14 @@
 
 if [ -z "$1" ]
     then
-        fileName="~/.packages"
+        fileName="$HOME/.packages"
     else
-        fileName="$1/package.csv"
+        fileName=$1
 fi
 
 read -p "Package name: " name
 
-check_list $name $fileName
+checkpackage $name $fileName
 
 read -p "Package comment: " comment
 read -p "Package category: " category

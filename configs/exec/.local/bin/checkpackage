@@ -1,12 +1,17 @@
-#!/bin/bash
+#!/bin/zsh
+
+if [ -z "$2" ]; then
+  fileName="$HOME/.packages"
+else
+  fileName=$2
+fi
 
 while IFS=, read -r tag category program comment; do
-    if [ $1 = $program ]
-    then
-        echo "The package is in the list"
-        echo "Installation tag: ", $tag
-        echo "Category: ", $category
-        echo "Name: ", $name
-        echo  "Description: ", $comment
-    fi
-done < $2
+  if [ $1 = $program ]; then
+    echo "The package is in the list"
+    echo "Tag:        " $tag
+    echo "Category:   " $category
+    echo "Name:       " $program
+    echo "Description:" $comment
+  fi
+done < $fileName
