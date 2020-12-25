@@ -6,19 +6,18 @@
 
 
 " Plugins
-source $HOME/.config/nvim/vim-plug/plugins.vim
+source $HOME/.config/nvim/plugins.vim
 
 " Basic Settings
-source $HOME/.config/nvim/general/settings.vim
-source $HOME/.config/nvim/keys/mappings.vim
+source $HOME/.config/nvim/settings.vim
+source $HOME/.config/nvim/mappings.vim
 
 " Intellisense
 source $HOME/.config/nvim/plug-config/coc.vim
-" source $HOME/.config/nvim/plug-config/youcompleteme.vim
 
 " Themes
-source $HOME/.config/nvim/themes/onedark.vim
-source $HOME/.config/nvim/themes/airline.vim
+source $HOME/.config/nvim/plug-config/onedark.vim
+source $HOME/.config/nvim/plug-config/airline.vim
 
 " Ranger
 source $HOME/.config/nvim/plug-config/rnvimr.vim
@@ -26,9 +25,6 @@ source $HOME/.config/nvim/plug-config/rnvimr.vim
 " Fzf
 source $HOME/.config/nvim/plug-config/fzf.vim
 
-" Explorer
-" source $HOME/.config/nvim/plug-config/nerdtree.vim
-
-luafile $HOME/.config/nvim/lua/plug-colorizer.lua
-
+" Colorizer
+luafile $HOME/.config/nvim/plug-config/plug-colorizer.lua
 source $HOME/.config/nvim/plug-config/rainbow.vim
