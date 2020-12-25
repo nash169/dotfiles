@@ -11,7 +11,7 @@ xset r rate 270 30
 if [ $dpi -le 100 ]; then
     # Start Xorg server at this DPI
     # 96, 120 (25% higher), 144 (50% higher), 168 (75% higher), 192 (100% higher)
-    xrandr --dpi 144
+    xrandr --dpi 168
 
     # Merge & load configuration from .Xresources
     xrdb -DHIDPI=1 -merge ~/.Xresources

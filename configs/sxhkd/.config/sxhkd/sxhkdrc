@@ -16,7 +16,7 @@ super + Escape
 
 # program launcher
 super + @space
-  dmenu_run -fn "Hack Nerd Font Mono-14"
+  dmenu_run -fn "Hack Nerd Font Mono-12"
 
 # terminal emulator
 super + Return

@@ -1,6 +1,6 @@
 ! Set HiDPI correction if needed
 #ifdef HIDPI
-    Xft.dpi: 144
+    Xft.dpi: 168
 #endif
 
 ! Other useful screen stuff
