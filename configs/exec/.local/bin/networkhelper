@@ -4,7 +4,7 @@ nmcli connection show
 
 read -p "Do you want to connect to a new network? [y/N]: " input
 
-if ["$input" -eq y] || ["$input" -eq Y]; then
+if [ $input = "y" ] || [ $input = "Y" ]; then
   read -p "Network name: " net
   read -s "Network password: " pass
 
