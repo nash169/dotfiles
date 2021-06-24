@@ -108,3 +108,10 @@ pkginstall xcompmgr
 
 # Install font
 pkginstall nerd-fonts-hack
+
+# Github SSH
+pkginstall xclip
+
+ssh−keygen −t ed25519 −C ”bernardo.fichera@gmail.com”
+
+xclip -selection clipboard < ~/.ssh/id_ed25519.pub
