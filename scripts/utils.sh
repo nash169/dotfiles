@@ -1,29 +1,24 @@
 #!/bin/bash
 
-# Prompts user for new username an password.
-getuserandpass() { \
-	name=$(dialog --inputbox "First, please enter a name for the user account." 10 60 3>&1 1>&2 2>&3 3>&1) || exit 1
-	while ! echo "$name" | grep -q "^[a-z_][a-z0-9_-]*$"; do
-		name=$(dialog --no-cancel --inputbox "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _." 10 60 3>&1 1>&2 2>&3 3>&1)
-	done
-	pass1=$(dialog --no-cancel --passwordbox "Enter a password for that user." 10 60 3>&1 1>&2 2>&3 3>&1)
-	pass2=$(dialog --no-cancel --passwordbox "Retype password." 10 60 3>&1 1>&2 2>&3 3>&1)
-	while ! [ "$pass1" = "$pass2" ]; do
-		unset pass2
-		pass1=$(dialog --no-cancel --passwordbox "Passwords do not match.\\n\\nEnter password again." 10 60 3>&1 1>&2 2>&3 3>&1)
-		pass2=$(dialog --no-cancel --passwordbox "Retype password." 10 60 3>&1 1>&2 2>&3 3>&1)
-	done
+# Create user
+adduser() {
+	# Adds user
+	useradd -m -g $2 "$1" >/dev/null 2>&1 ||
+	# Something about the user to the group
+	usermod -a -G $2 "$1" && mkdir -p /home/"$1" && chown "$1":$2 /home/"$1"
+	# Set password
+	passwd $1
 }
 
-# Set user and pass
-adduserandpass() { \
-	# Adds user `$name` with password $pass1.
-	dialog --infobox "Adding user \"$name\"..." 4 50
-	useradd -m -g wheel -s /bin/zsh "$name" >/dev/null 2>&1 ||
-	usermod -a -G wheel "$name" && mkdir -p /home/"$name" && chown "$name":wheel /home/"$name"
-	repodir="/home/$name/.local/src"; mkdir -p "$repodir"; chown -R "$name":wheel "$(dirname "$repodir")"
-	echo "$name:$pass1" | chpasswd
-	unset pass1 pass2
+changeuser() {
+	# Change username
+	usermod -l $2 $1
+    # Creta home folder
+	usermod -m -d /home/$2 $1
+	# Set pasword
+	if [$# -eq 3]; then
+		passwd $2
+	fi
 }
 
 # Install a group of pacakge
