@@ -161,6 +161,163 @@ After rebooting you should be able to connect with
 \end{lstlisting}
 
 \section*{Raspberry}
+Connect.. as root
+\begin{lstlisting}
+    wifi-menu
+\end{lstlisting}
+The procedure below can be made automatic but sed has to be installed.
+
+\subsection{Preliminaries}
+As root user
+\begin{lstlisting}
+    pacman -S sudo
+\end{lstlisting}
+Change default username
+\begin{lstlisting}
+    usermod -l newname oldname
+    usermod -m -d /home/newname newname
+\end{lstlisting}
+Change default group
+\begin{lstlisting}
+    groupmod -n newname oldname
+\end{lstlisting}
+Change password user and root
+\begin{lstlisting}
+    passwd root
+    passwd username
+\end{lstlisting}
+Add username to sudo
+\begin{lstlisting}
+    nano /etc/sudoers
+\end{lstlisting}
+Add
+\begin{lstlisting}
+    username ALL=(ALL) ALL
+\end{lstlisting}
+under
+\begin{lstlisting}
+    root ALL=(ALL) ALL
+\end{lstlisting}
+Change machine name
+\begin{lstlisting}
+    nano /etc/hostname
+\end{lstlisting}
+Set hosts
+\begin{lstlisting}
+    nano /etc/hosts
+\end{lstlisting}
+Add
+\begin{lstlisting}
+    127.0.0.1	localhost
+    ::1		    localhost
+    127.0.1.1	myhostname
+\end{lstlisting}
+Install base devel packages
+\begin{lstlisting}
+    sudo pacman -S --needed base-devel
+\end{lstlisting}
+Install git
+\begin{lstlisting}
+    sudo pacman -S git
+\end{lstlisting}
+Install paru AUR helper
+\begin{lstlisting}
+    git clone https://aur.archlinux.org/paru.git
+    cd paru
+    makepkg -si
+\end{lstlisting}
+Remove paru repos.
+
+Install network manager
+\begin{lstlisting}
+    paru -S networkmanager
+\end{lstlisting}
+
+Generate SSH key (check if ssh is installed)
+\begin{lstlisting}
+    ssh-keygen -t ed25519 -C "your_email@example.com"
+\end{lstlisting}
+Install basic x11 server
+\begin{lstlisting}
+    paru -S xorg
+\end{lstlisting}
+This is installing everything. Some pack are probably not useful.
+
+Create dirs
+\begin{lstlisting}
+    mkdir docs devs repos ws
+\end{lstlisting}
+
+Installing tiling window manager
+\begin{lstlisting}
+    cd devs
+    git clone https://github.com/nash169/dwm.git
+\end{lstlisting}
+
+Install terminal
+\begin{lstlisting}
+    cd devs
+    git clone https://github.com/nash169/st.git
+\end{lstlisting}
+
+Installation zsh shell and basic configuration
+\begin{lstlisting}
+    sudo paru -S zsh
+\end{lstlisting}
+Set default shell
+\begin{lstlisting}
+    chsh -s $(which zsh)
+\end{lstlisting}
+Here it goes the automatic creation of .zshrc otherwise the guided configuration will start.
+
+install file Manager
+\begin{lstlisting}
+    paru -S ranger
+\end{lstlisting}
+
+install fuzzy finder
+\begin{lstlisting}
+    paru -S fzf
+\end{lstlisting}
+
+install grepper
+\begin{lstlisting}
+    paru -S ripgrep
+\end{lstlisting}
+
+install node
+\begin{lstlisting}
+    paru -S nodejs
+	paru -S npm
+    sudo npm i -g neovim
+\end{lstlisting}
+
+installing neovim
+\begin{lstlisting}
+    paru -S neovim python-pynvim neovim-remote python-ueberzug-git
+\end{lstlisting}
+
+\begin{lstlisting}
+    npm install -g tree-sitter-cli
+\end{lstlisting}
+
+
+install pip
+\begin{lstlisting}
+    paru -S pip
+\end{lstlisting}
+
+\begin{lstlisting}
+    git remote rename origin upstream
+    git remote add origin https://github.com/your-repo/goes-here.git
+    git push origin master
+
+    git remote add upstream https://github.com/original-repo/goes-here.git
+    git fetch upstream
+    git rebase upstream/master
+    git push origin master (--force)
+\end{lstlisting}
+
 \begin{lstlisting}
     raspi-config
     python-raspberry-gpio
