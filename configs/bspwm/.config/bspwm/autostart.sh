@@ -18,9 +18,5 @@ $HOME/.config/polybar/launch.sh &
 #change your keyboard if you need it
 #setxkbmap -layout be
 
-#Some ways to set your wallpaper besides variety or nitrogen
-feh --bg-scale ~/.config/bspwm/walls/01.png &
-
 xsetroot -cursor_name left_ptr &
 run sxhkd &
-run xcompmgr &
