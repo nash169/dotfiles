@@ -69,7 +69,7 @@ if [ $input = "y" ] || [ $input = "Y" ]; then
     sed "/^root ALL=(ALL) ALL.*/a "$name" ALL=(ALL) ALL" /etc/sudoers
 fi
 
-# Set machine name
+# SET MACHINE NAME
 read -p "Do you want to set the machine name? [y/N]: " input
 if [ $input = "y" ] || [ $input = "Y" ]; then
     read -p "Machine name: " name
@@ -78,3 +78,33 @@ if [ $input = "y" ] || [ $input = "Y" ]; then
     ::1     localhost
     127.0.0.1 "$name"" > /etc/hosts
 fi
+
+# Install configuration
+pkginstall stow || error "Could not install desired packages."
+
+read -p "Which configuration do you want to install?
+(1) xserver
+(2) zsh
+(2) dwm
+(3) bspwm
+(4) sxhkd
+(5) polybar
+(6) ranger
+(7) neovim
+(8) clang format
+(9) helpers
+(3) Skip" input
+
+# CONFIGURE XSERVER
+
+# Install feh for setting the wallapaper
+pkginstall feh
+
+# Install xcompmgr for transparency
+pkginstall xcompmgr
+
+
+# TERMINAL
+
+# Install font
+pkginstall nerd-fonts-hack
