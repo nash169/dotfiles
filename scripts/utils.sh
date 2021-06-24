@@ -62,3 +62,39 @@ error() {
 	clear; printf "ERROR:\\n%s\\n" "$1" >&2; exit 1
 }
 
+# Check package
+pkgcheck() {
+    if pacman -Qi $1 &> /dev/null; then
+        tput setaf 2
+        echo "The package "$1" is already installed"
+        tput sgr0
+        return false
+    else
+        tput setaf 1
+        echo "Package "$1" has NOT been installed"
+        tput sgr0
+        return true
+    fi
+}
+
+# Install package
+pkginstall() {
+	for item in "$@"; do
+		if [! pkgcheck $item]; then
+			# pacman installation
+			if pacman -Ss $item &> /dev/null; then
+				tput setaf 3
+				echo "Installing package "$item" with pacman"
+				tput sgr0
+				sudo pacman -S --noconfirm --needed $item
+			# Aur helper installation
+			else if pacman -Qi paru &> /dev/null; then
+				tput setaf 3
+				echo "Installing package "$item" with paru"
+				tput sgr0
+				paru -S --noconfirm $item
+			fi
+		fi
+	done
+}
+
