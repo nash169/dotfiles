@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Define screen dpi
 declare -i dpi=$(xdpyinfo | grep resolution | sed -r 's/^[^0-9]*([0-9]+).*$/\1/')
 
@@ -24,4 +26,10 @@ else
     # Merge & load configuration from .Xresources
     xrdb -merge ~/.Xresources
 fi
+
+# Set background wall (alternatives: variety or nitrogen)
+feh --bg-scale ~/.config/walls/01.png &
+
+# Run xcompmgr for transparency
+xcompmgr &
 
