@@ -1,6 +1,7 @@
 #!/bin/bash
 source utils.sh
 
+pkginstall base-devel cmake unzip
 
 # CONNECT
 echo "Check if internet connection is present..."
@@ -115,3 +116,30 @@ pkginstall xclip
 ssh−keygen −t ed25519 −C ”bernardo.fichera@gmail.com”
 
 xclip -selection clipboard < ~/.ssh/id_ed25519.pub
+
+# NEOVIM
+
+# Prerequisite for the last versiono of neovim
+pkginstall ninja tree-sitter lua luarocks
+
+#  Node support
+pkginstall nodejs npm
+sudo npm install -g neovim
+
+# Python support
+pkginstall python-pip
+pip install pynvim --user
+
+# Package manager
+git clone https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
+
+pkginstall ripgrep fzf ranger
+
+# Allow to draw image in terminal
+pkginstall python-ueberzug-git
+
+# Don't know yet
+pkginstall neovim-remote
+npm install -g tree-sitter-cli
+
+nvim -u $HOME/.config/nvim/init.lua +PackerInstall
