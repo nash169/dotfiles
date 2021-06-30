@@ -111,7 +111,7 @@ pkginstall xcompmgr
 pkginstall nerd-fonts-hack
 
 # Github SSH
-pkginstall xclip
+pkginstall xclip keychain
 
 ssh−keygen −t ed25519 −C ”bernardo.fichera@gmail.com”
 
