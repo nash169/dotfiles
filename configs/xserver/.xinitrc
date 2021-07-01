@@ -15,4 +15,4 @@ fi
 [ -f ~/.xprofile ] && . ~/.xprofile
 
 # Start display manager
-exec bspwm
+exec dwm
