@@ -10,7 +10,7 @@ declare -i dpi=$(xdpyinfo | grep resolution | sed -r 's/^[^0-9]*([0-9]+).*$/\1/'
 xset r rate 270 30
 
 # Set HiDPI if dpi lower then 100 dpi
-if [ $dpi -le 100 ]; then
+if [ $dpi -lt 96 ]; then
     # Start Xorg server at this DPI
     # 96, 120 (25% higher), 144 (50% higher), 168 (75% higher), 192 (100% higher)
     xrandr --dpi 168
@@ -33,3 +33,10 @@ feh --bg-scale ~/.config/walls/01.png &
 # Run xcompmgr for transparency
 xcompmgr &
 
+# XDG Paths
+export XDG_CONFIG_HOME=$HOME/.config
+export XDG_CACHE_HOME=$HOME/.cache
+export XDG_DATA_HOME=$HOME/.local/share
+
+# ZSH Config dir
+export ZDOTDIR=$HOME/.config/zsh
