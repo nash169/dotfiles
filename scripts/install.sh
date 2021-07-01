@@ -143,3 +143,7 @@ pkginstall neovim-remote
 npm install -g tree-sitter-cli
 
 nvim -u $HOME/.config/nvim/init.lua +PackerInstall
+
+# ZSH
+pkginstall zsh
+pkginstall zsh-autosuggestions zsh-syntax-highlighting
