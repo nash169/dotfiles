@@ -3,22 +3,22 @@
 # Check package
 pkgcheck() {
     if pacman -Qi $1 &> /dev/null; then
-        tput setaf 2
-        echo "The package "$1" is already installed"
-        tput sgr0
-        return false
+        # tput setaf 2
+        # echo "The package "$1" is already installed"
+        # tput sgr0
+        true
     else
-        tput setaf 1
-        echo "Package "$1" has NOT been installed"
-        tput sgr0
-        return true
+        # tput setaf 1
+        # echo "Package "$1" has NOT been installed"
+        # tput sgr0
+        false
     fi
 }
 
 # Install package
 pkginstall() {
 	for item in "$@"; do
-		if [! pkgcheck $item]; then
+		if ! pkgcheck $item; then
 			# pacman installation
 			if pacman -Ss $item &> /dev/null; then
 				tput setaf 3
