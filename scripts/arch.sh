@@ -3,14 +3,14 @@
 # Check package
 pkgcheck() {
     if pacman -Qi $1 &> /dev/null; then
-        # tput setaf 2
-        # echo "The package "$1" is already installed"
-        # tput sgr0
+        tput setaf 2
+        echo "The package "$1" is already installed"
+        tput sgr0
         true
     else
-        # tput setaf 1
-        # echo "Package "$1" has NOT been installed"
-        # tput sgr0
+        tput setaf 1
+        echo "Package "$1" has NOT been installed"
+        tput sgr0
         false
     fi
 }

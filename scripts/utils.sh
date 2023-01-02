@@ -24,7 +24,7 @@ changeuser() {
 
 # Add user to sudoers -> $1: username
 addsudo() {
-	sed "/^root ALL=(ALL:ALL) ALL.*/a "$1" ALL=(ALL) ALL" /etc/sudoers
+	sed -i "/^root ALL=(ALL:ALL) ALL.*/a "$1" ALL=(ALL:ALL) ALL" /etc/sudoers
 }
 
 # Install a group of pacakge
@@ -44,11 +44,9 @@ install_category() {
 # Install make-based package from git
 gitmakeinstall() {
 	progname="$(basename "$1" .git)"
-	dir="~/repos/$progname"
-	git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return 1 ; git pull --force origin master;}
-	cd "$dir" || exit 1
-	make clean install >/dev/null 2>&1
-	cd /tmp || return 1
+	rm -rf /tmp/"$progname"*
+	dir="/tmp/$progname"
+	git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return 1 ; make clean install >/dev/null 2>&1;}
 }
 
 # Install python package via pip
