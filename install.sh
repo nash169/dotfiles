@@ -6,10 +6,10 @@ source scripts/$1.sh
 base=(zsh zsh-autosuggestions zsh-syntax-highlighting curl cmake unzip sudo sed stow)
 pkginstall ${base[@]} || "Error: could not install base packages."
 
-# # ADD USER
-# read -p "Insert user name (and pass): " name
-# adduser name wheel || "Error: could not add user."
-# addsudo naem || "Error: could not add user to sudoers."
+# ADD USER
+read -p "Insert user name (and pass): " name
+adduser $name wheel || "Error: could not add user."
+addsudo $name || "Error: could not add user to sudoers."
 
 # # SSH & GIT
 # ssh = (openssh keychain)
