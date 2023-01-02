@@ -24,7 +24,7 @@ changeuser() {
 
 # Add user to sudoers -> $1: username
 addsudo() {
-	sed "/^root ALL=(ALL) ALL.*/a "$1" ALL=(ALL) ALL" /etc/sudoers
+	sed "/^root ALL=(ALL:ALL) ALL.*/a "$1" ALL=(ALL) ALL" /etc/sudoers
 }
 
 # Install a group of pacakge
