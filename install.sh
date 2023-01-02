@@ -18,7 +18,7 @@ pkginstall ${utils[@]} || "Error: could not install UTILS packages."
 # INSTALL ZSH
 zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
 pkginstall ${zsh[@]} || "Error: could not install ZSH packages."
-stow configs/zsh -t /home/$username/
+cd configs && stow zsh -t /home/$username/
 
 # # SSH & GIT
 # stow configs/ssh -t /home/$username/

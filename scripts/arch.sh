@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# git clone https://aur.archlinux.org/paru.git
+# cd paru
+# makepkg -si
+
 # Check package
 pkgcheck() {
     if pacman -Qi $1 &> /dev/null; then
@@ -32,14 +36,13 @@ pkginstall() {
 				tput sgr0
 				paru -Ssq --noconfirm $item
 			else
-				[ -f "/usr/bin/$1" ] || (
-				dialog --infobox "Installing \"$1\"..." 4 50
+				[ -f "/usr/bin/$item" ] || (
 				cd /tmp || exit 1
-				rm -rf /tmp/"$1"*
-				curl -sO https://aur.archlinux.org/cgit/aur.git/snapshot/"$1".tar.gz &&
-				sudo -u "$name" tar -xvf "$1".tar.gz >/dev/null 2>&1 &&
+				rm -rf /tmp/"$item"*
+				curl -sO https://aur.archlinux.org/cgit/aur.git/snapshot/"$item".tar.gz &&
+				tar -xvf "$1".tar.gz >/dev/null 2>&1 &&
 				cd "$1" &&
-				sudo -u "$name" makepkg --noconfirm -si >/dev/null 2>&1
+				makepkg --noconfirm -si >/dev/null 2>&1
 				cd /tmp || return 1)
 			fi
 		fi
