@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Create user
+# Add user -> $1: name, $2: group
 adduser() {
 	# Adds user
 	useradd -m -g $2 "$1" >/dev/null 2>&1 ||
@@ -10,6 +10,7 @@ adduser() {
 	passwd $1
 }
 
+# Change user -> $1: oldname, $2: newname
 changeuser() {
 	# Change username
 	usermod -l $2 $1
@@ -19,6 +20,11 @@ changeuser() {
 	if [$# -eq 3]; then
 		passwd $2
 	fi
+}
+
+# Add user to sudoers -> $1: username
+addsudo() {
+	sed "/^root ALL=(ALL) ALL.*/a "$1" ALL=(ALL) ALL" /etc/sudoers
 }
 
 # Install a group of pacakge
@@ -35,8 +41,8 @@ install_category() {
 	done < $1
 }
 
-# Instal make-based package from git
-gitmake_install() {
+# Install make-based package from git
+gitmakeinstall() {
 	progname="$(basename "$1" .git)"
 	dir="~/repos/$progname"
 	git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return 1 ; git pull --force origin master;}
@@ -56,40 +62,3 @@ pipinstall() {
 error() { 
 	clear; printf "ERROR:\\n%s\\n" "$1" >&2; exit 1
 }
-
-# Check package
-pkgcheck() {
-    if pacman -Qi $1 &> /dev/null; then
-        tput setaf 2
-        echo "The package "$1" is already installed"
-        tput sgr0
-        return false
-    else
-        tput setaf 1
-        echo "Package "$1" has NOT been installed"
-        tput sgr0
-        return true
-    fi
-}
-
-# Install package
-pkginstall() {
-	for item in "$@"; do
-		if [! pkgcheck $item]; then
-			# pacman installation
-			if pacman -Ss $item &> /dev/null; then
-				tput setaf 3
-				echo "Installing package "$item" with pacman"
-				tput sgr0
-				sudo pacman -S --noconfirm --needed $item
-			# Aur helper installation
-			else if pacman -Qi paru &> /dev/null; then
-				tput setaf 3
-				echo "Installing package "$item" with paru"
-				tput sgr0
-				paru -S --noconfirm $item
-			fi
-		fi
-	done
-}
-
