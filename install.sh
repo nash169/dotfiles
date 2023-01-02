@@ -78,12 +78,12 @@ pkginstall ${email[@]} || "Error: could not install EMAIL packages."
 audio=(wireplumber pipewire-pulse pulsemixer)
 pkginstall ${audio[@]} || "Error: could not install AUDIO packages."
 
-# BLUETOOTH
-bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
-pkginstall ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."
-sudo systemctl enable bluetooth.service
-sudo systemctl start bluetooth.service
-sudo sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
+# # BLUETOOTH
+# bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
+# pkginstall ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."
+# sudo systemctl enable bluetooth.service
+# sudo systemctl start bluetooth.service
+# sudo sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
 
 # DOWNLOAD
 download=(rtorrent-ps youtube-dl)
