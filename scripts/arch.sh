@@ -26,7 +26,7 @@ pkginstall() {
 				tput sgr0
 				sudo pacman -S --noconfirm --needed $item
 			# Aur helper installation
-			else if pacman -Qi paru &> /dev/null; then
+			elif pacman -Qi paru &> /dev/null; then
 				tput setaf 3
 				echo "Installing package "$item" with paru"
 				tput sgr0
