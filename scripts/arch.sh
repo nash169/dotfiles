@@ -24,13 +24,13 @@ pkginstall() {
 				tput setaf 3
 				echo "Installing package "$item" with pacman"
 				tput sgr0
-				sudo pacman -S --noconfirm --needed $item
+				sudo pacman -Ssq --noconfirm --needed $item
 			# Aur helper installation
 			elif pacman -Qi paru &> /dev/null; then
 				tput setaf 3
 				echo "Installing package "$item" with paru"
 				tput sgr0
-				paru -S --noconfirm $item
+				paru -Ssq --noconfirm $item
 			else
 				[ -f "/usr/bin/$1" ] || (
 				dialog --infobox "Installing \"$1\"..." 4 50
