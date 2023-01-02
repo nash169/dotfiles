@@ -1,21 +1,22 @@
 #!/bin/bash
 source scripts/utils.sh
-source scripts/distros/$1.sh
+source scripts/$1.sh
 
 # INSTALL BASIC PACKAGES
-base = (zsh zsh-autosuggestions zsh-syntax-highlighting curl cmake unzip sudo sed stow)
-pkginstall base || "Error: could not install base packages."
+base=(zsh zsh-autosuggestions zsh-syntax-highlighting curl cmake unzip sudo sed stow)
+pkginstall ${base[@]} || "Error: could not install base packages."
 
 # # ADD USER
 # read -p "Insert user name (and pass): " name
 # adduser name wheel || "Error: could not add user."
 # addsudo naem || "Error: could not add user to sudoers."
 
-# # GENERATE SSH KEY
+# # SSH & GIT
 # ssh = (openssh keychain)
 # pkginstall ssh || "Error: "
 # read -p "Insert your email: " email
 # ssh-keygen -t ed25519 -C "$email"
+# git config --global user.email "$email"
 
 # # DESKTOP
 # desktop = (xcompmgr feh)
