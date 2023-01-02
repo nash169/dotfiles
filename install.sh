@@ -40,8 +40,8 @@ stow configs/walls -t /home/$username/
 feh --bg-scale /home/$username/.config/walls/01.png
 
 # TERMINAL
-gitmakeninstall https://github.com/nash169/st.git
-terminal = (tmux exa nerd-fonts-hack)
+gitmakeinstall https://github.com/nash169/st.git
+terminal=(tmux exa nerd-fonts-hack)
 pkginstall ${terminal[@]} || "Error: could not install TERMINAL packages."
 
 # EDITOR
