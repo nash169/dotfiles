@@ -19,32 +19,34 @@ pkgcheck() {
 
 # Install package -> $1: user, $@: packages
 pkginstall() {
+	username=$1
+	shift
 	for item in "$@"; do
 		if ! pkgcheck $item; then
 			# pacman installation
-			if sudo -u "$1" pacman -Ss $item &> /dev/null; then
+			if sudo -u "$username" pacman -Ss $item &> /dev/null; then
 				tput setaf 3
 				echo "Installing package "$item" with pacman"
 				tput sgr0
-				sudo -u "$1" pacman -S --noconfirm --needed $item
+				sudo -u "$username" pacman -S --noconfirm --needed $item
 			# Aur helper installation
-			elif sudo -u "$1" pacman -Qi $AURHELPER &> /dev/null; then
+			elif sudo -u "$username" pacman -Qi $AURHELPER &> /dev/null; then
 				tput setaf 3
 				echo "Installing package "$item" with "$AURHELPER""
 				tput sgr0
-				sudo -u "$1" $AURHELPER -S --noconfirm $item
+				sudo -u "$username" $AURHELPER -S --noconfirm $item
 			else
 				tput setaf 3
 				echo "Installing package "$item" from source"
 				tput sgr0
-				sudo -u "$1" mkdir -p "/tmp/$item"
-				sudo -u "$1" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "/tmp/$item" ||
+				sudo -u "$username" mkdir -p "/tmp/$item"
+				sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "/tmp/$item" ||
 					{
 						cd "/tmp/$item" || return 1
 						sudo -u "$name" git pull --force origin master
 					}
 				cd "/tmp/$item" || exit 1
-				sudo -u "$1" -D "/tmp/$item" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+				sudo -u "$username" -D "/tmp/$item" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
 			fi
 		fi
 	done
