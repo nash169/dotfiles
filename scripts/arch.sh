@@ -1,6 +1,17 @@
 #!/bin/bash
 
-AURHELPER=paru
+AURHELPER=yay
+
+aurhelperinstall() {
+	sudo -u "$1" mkdir -p "/tmp/$AURHELPER"
+	sudo -u "$1" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$AURHELPER.git" "/tmp/$AURHELPER" ||
+		{
+			cd "/tmp/$AURHELPER" || return 1
+			sudo -u "$1" git pull --force origin master
+		}
+	cd "/tmp/$AURHELPER" || exit 1
+	sudo -u "$1" -D "/tmp/$AURHELPER" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+}
 
 # Check package -> $1: package
 pkgcheck() {
