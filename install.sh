@@ -27,7 +27,7 @@ sudo -u $username git clone https://github.com/nash169/linux-config.git /home/$u
 # ZSH
 zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
 pkginstall ${zsh[@]} || "Error: could not install ZSH packages."
-cd /home/$username/developments/linux-config/configs && sudo -u bernardo stow zsh -t /home/$username/
+cd /home/$username/developments/linux-config/configs && sudo -u $username stow zsh -t /home/$username/
 
 # # SSH & GIT
 # stow configs/ssh -t /home/$username/
