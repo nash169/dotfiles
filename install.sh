@@ -26,16 +26,16 @@ sudo -u $username git clone https://github.com/nash169/linux-config.git /home/$u
 
 # ZSH
 zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
-pkginstall ${zsh[@]} || "Error: could not install ZSH packages."
+pkginstall $username ${zsh[@]} || "Error: could not install ZSH packages."
 cd /home/$username/developments/linux-config/configs && sudo -u $username stow zsh -t /home/$username/
 
-# # SSH & GIT
-# stow configs/ssh -t /home/$username/
-# ssh=(openssh keychain)
-# pkginstall ${ssh[@]} || "Error: could not install SSH packages."
-# read -p "Insert your email: " email
-# ssh-keygen -t ed25519 -C "$email"
-# git config --global user.email "$email"
+# SSH & GIT
+cd /home/$username/developments/linux-config/configs && sudo -u $username stow ssh -t /home/$username/
+ssh=(openssh keychain)
+pkginstall $username ${ssh[@]} || "Error: could not install SSH packages."
+read -p "Insert your email: " email
+sudo -u $username ssh-keygen -t ed25519 -C "$email"
+sudo -u $username git config --global user.email "$email"
 
 # # DESkTOP
 # xorg=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight)
