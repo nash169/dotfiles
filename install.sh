@@ -16,7 +16,7 @@ else
 fi
 
 # BASIC UTILS
-utils=(yay curl stow)
+utils=(paru curl stow)
 pkginstall $username ${utils[@]} || "Error: could not install UTILS packages."
 
 # # ZSH
