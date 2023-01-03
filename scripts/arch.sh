@@ -17,9 +17,9 @@ pkgcheck() {
     fi
 }
 
-# Install package -> $1: user, $2: packages
+# Install package -> $1: user, $@: packages
 pkginstall() {
-	for item in "${2[@]}"; do
+	for item in "$@"; do
 		if ! pkgcheck $item; then
 			# pacman installation
 			if sudo -u "$1" pacman -Ss $item &> /dev/null; then
