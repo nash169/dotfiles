@@ -1,6 +1,6 @@
 #!/bin/bash
 
-AUR=yay
+AURHELPER=paru
 
 # Check package -> $1: package
 pkgcheck() {
@@ -24,13 +24,13 @@ pkginstall() {
 	for item in "$@"; do
 		if ! pkgcheck $item; then
 			# pacman installation
-			if sudo -u "$username" pacman -Ss $item &> /dev/null; then
+			if pacman -Ss $item &> /dev/null; then
 				tput setaf 3
 				echo "Installing package "$item" with pacman"
 				tput sgr0
-				sudo -u "$username" pacman -S --noconfirm --needed $item
+				pacman -S --noconfirm --needed $item
 			# Aur helper installation
-			elif sudo -u "$username" pacman -Qi $AURHELPER &> /dev/null; then
+			elif pacman -Qi $AURHELPER &> /dev/null; then
 				tput setaf 3
 				echo "Installing package "$item" with "$AURHELPER""
 				tput sgr0
