@@ -1,8 +1,10 @@
 #!/bin/bash
 
-# git clone https://aur.archlinux.org/paru.git
-# cd paru
-# makepkg -si
+aurinstall() {
+	aur=https://aur.archlinux.org/paru.git
+	dir="/tmp/"$(basename "$1" .git)""
+	git clone --depth 1 "$aur" "$dir" >/dev/null 2>&1 || { cd "$dir" || return 1 ; makepkg -si >/dev/null 2>&1;}
+}
 
 # Check package
 pkgcheck() {
