@@ -53,15 +53,15 @@ pkginstall() {
 				tput setaf 3
 				echo "Installing package "$item" from source"
 				tput 
-				rm -rf "$item"
-				sudo -u "$username" mkdir -p "$item"
-				sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "$item" ||
+				rm -rf "~/$item"
+				sudo -u "$username" mkdir -p "~/$item"
+				sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "~/$item" ||
 					{
-						cd "$item" || return 1
+						cd "~/$item" || return 1
 						sudo -u "$name" git pull --force origin master
 					}
-				cd "$item" || exit 1
-				sudo -u "$username" -D "$item" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+				cd "~/$item" || exit 1
+				sudo -u "$username" -D "~/$item" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
 			fi
 		fi
 	done
