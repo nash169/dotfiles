@@ -14,12 +14,11 @@ else
     adduser $username wheel || "Error: could not add user."
     addsudo $username || "Error: could not add user to sudoers."
 fi
+sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
 
 # BASIC UTILS
-sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
-# sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
-# utils=($AURHELPER curl stow)
-# pkginstall $username ${utils[@]} || "Error: could not install UTILS packages."
+utils=($AURHELPER curl stow)
+pkginstall $username ${utils[@]} || "Error: could not install UTILS packages."
 
 # # ZSH
 # zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
@@ -94,6 +93,8 @@ sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
 # # DOWNLOAD
 # download=(rtorrent-ps youtube-dl)
 # pkginstall ${download[@]} || "Error: could not install DOWNLOAD packages."
+
+sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
 
 # #  Node support
 # pkginstall nodejs npm
