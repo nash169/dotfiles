@@ -3,7 +3,7 @@ source scripts/utils.sh
 source scripts/$1.sh
 
 # ESSENTIAL
-base=(sudo sed curl stow)
+base=(sudo sed)
 pkginstall root ${base[@]} || "Error: could not install UTILS packages."
 
 # ADD USER
@@ -15,7 +15,9 @@ else
     addsudo $username || "Error: could not add user to sudoers."
 fi
 
-aurhelperinstall $username || "Error: could not install UTILS packages."
+# BASIC UTILS
+utils=($AURHELPER curl stow)
+pkginstall $username ${utils[@]} || "Error: could not install UTILS packages."
 
 # # ZSH
 # zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
