@@ -2,6 +2,10 @@
 source scripts/utils.sh
 source scripts/$1.sh
 
+# ESSENTIAL
+base=(sudo sed)
+pkginstall root ${base[@]} || "Error: could not install UTILS packages."
+
 # ADD USER
 read -p "Insert user name (and pass): " username
 if id "$username" &>/dev/null; then
@@ -11,11 +15,11 @@ else
     addsudo $username || "Error: could not add user to sudoers."
 fi
 
-# INSTALL BASIC UTILS
-utils=(yay curl unzip sudo sed stow htop-vim)
-pkginstall $username $utils || "Error: could not install UTILS packages."
+# BASIC UTILS
+utils=(yay curl stow)
+pkginstall $username ${utils[@]} || "Error: could not install UTILS packages."
 
-# # INSTALL ZSH
+# # ZSH
 # zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
 # pkginstall ${zsh[@]} || "Error: could not install ZSH packages."
 # cd configs && stow zsh -t /home/$username/
