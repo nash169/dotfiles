@@ -22,7 +22,7 @@ aurhelperinstall $username || "Error: could not install aur helper."
 # FOLDERS
 sudo -u $username mkdir  /home/$username/documents  /home/$username/developments  /home/$username/repositories  /home/$username/workspaces
 sudo -u $username mkdir -p /home/$username/developments/linux-config
-sudo -i $username git clone https://github.com/nash169/linux-config.git /home/$username/developments/linux-config
+sudo -u $username git clone https://github.com/nash169/linux-config.git /home/$username/developments/linux-config
 
 # ZSH
 zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
