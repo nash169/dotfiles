@@ -1,12 +1,8 @@
 #!/bin/bash
 
-aurinstall() {
-	aur=https://aur.archlinux.org/paru.git
-	dir="/tmp/"$(basename "$1" .git)""
-	git clone --depth 1 "$aur" "$dir" >/dev/null 2>&1 || { cd "$dir" || return 1 ; makepkg -si >/dev/null 2>&1;}
-}
+AUR=yay
 
-# Check package
+# Check package -> $1: package
 pkgcheck() {
     if pacman -Qi $1 &> /dev/null; then
         tput setaf 2
@@ -21,31 +17,34 @@ pkgcheck() {
     fi
 }
 
-# Install package
+# Install package -> $1: user, $2: packages
 pkginstall() {
-	for item in "$@"; do
+	for item in "${2[@]}"; do
 		if ! pkgcheck $item; then
 			# pacman installation
-			if pacman -Ss $item &> /dev/null; then
+			if sudo -u "$1" pacman -Ss $item &> /dev/null; then
 				tput setaf 3
 				echo "Installing package "$item" with pacman"
 				tput sgr0
-				sudo pacman -Ssq --noconfirm --needed $item
+				sudo -u "$1" pacman -S --noconfirm --needed $item
 			# Aur helper installation
-			elif pacman -Qi paru &> /dev/null; then
+			elif sudo -u "$1" pacman -Qi $AURHELPER &> /dev/null; then
 				tput setaf 3
-				echo "Installing package "$item" with paru"
+				echo "Installing package "$item" with "$AURHELPER""
 				tput sgr0
-				paru -Ssq --noconfirm $item
+				sudo -u "$1" $AURHELPER -S --noconfirm $item
 			else
-				[ -f "/usr/bin/$item" ] || (
-				cd /tmp || exit 1
-				rm -rf /tmp/"$item"*
-				curl -sO https://aur.archlinux.org/cgit/aur.git/snapshot/"$item".tar.gz &&
-				tar -xvf "$1".tar.gz >/dev/null 2>&1 &&
-				cd "$1" &&
-				makepkg --noconfirm -si >/dev/null 2>&1
-				cd /tmp || return 1)
+				tput setaf 3
+				echo "Installing package "$item" from source"
+				tput sgr0
+				sudo -u "$1" mkdir -p "/tmp/$item"
+				sudo -u "$1" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "/tmp/$item" ||
+					{
+						cd "/tmp/$item" || return 1
+						sudo -u "$name" git pull --force origin master
+					}
+				cd "/tmp/$item" || exit 1
+				sudo -u "$1" -D "/tmp/$item" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
 			fi
 		fi
 	done

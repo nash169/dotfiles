@@ -12,13 +12,13 @@ else
 fi
 
 # INSTALL BASIC UTILS
-utils=(curl unzip sudo sed stow htop-vim)
-pkginstall ${utils[@]} || "Error: could not install UTILS packages."
+utils=(yay curl unzip sudo sed stow htop-vim)
+pkginstall $username $utils || "Error: could not install UTILS packages."
 
-# INSTALL ZSH
-zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
-pkginstall ${zsh[@]} || "Error: could not install ZSH packages."
-cd configs && stow zsh -t /home/$username/
+# # INSTALL ZSH
+# zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
+# pkginstall ${zsh[@]} || "Error: could not install ZSH packages."
+# cd configs && stow zsh -t /home/$username/
 
 # # SSH & GIT
 # stow configs/ssh -t /home/$username/
