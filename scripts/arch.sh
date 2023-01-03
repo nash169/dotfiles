@@ -1,20 +1,20 @@
 #!/bin/bash
 
-AURHELPER=paru
+AURHELPER=yay
 
-# aurhelperinstall() {
-# 	tput setaf 3
-# 	echo "Installing aur helper "$AURHELPER""
-# 	tput sgr0
-# 	sudo -u "$1" mkdir -p "/tmp/$AURHELPER"
-# 	sudo -u "$1" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$AURHELPER.git" "/tmp/$AURHELPER" ||
-# 		{
-# 			cd "/tmp/$AURHELPER" || return 1
-# 			sudo -u "$1" git pull --force origin master
-# 		}
-# 	cd "/tmp/$AURHELPER" || exit 1
-# 	sudo -u "$1" -D "/tmp/$AURHELPER" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
-# }
+aurhelperinstall() {
+	tput setaf 3
+	echo "Installing aur helper "$AURHELPER""
+	tput sgr0
+	sudo -u "$1" mkdir -p "/tmp/$AURHELPER"
+	sudo -u "$1" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$AURHELPER.git" "/tmp/$AURHELPER" ||
+		{
+			cd "/tmp/$AURHELPER" || return 1
+			sudo -u "$1" git pull --force origin master
+		}
+	cd "/tmp/$AURHELPER" || exit 1
+	sudo -u "$1" -D "/tmp/$AURHELPER" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+}
 
 # Check package -> $1: package
 pkgcheck() {
@@ -53,16 +53,15 @@ pkginstall() {
 				tput setaf 3
 				echo "Installing package "$item" from source"
 				tput 
-				dir="/home/$username/$item"
-				rm -rf "$dir"
-				sudo -u "$username" mkdir -p "$dir"
-				sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "$dir" ||
-					{
-						cd "$dir" || return 1
-						sudo -u "$name" git pull --force origin master
-					}
-				cd "$dir" || exit 1
-				sudo -u "$username" -D "$dir" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+				rm -rf "/tmp/$item"
+				sudo -u "$username" mkdir -p "/tmp/$item"
+				sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "/tmp/$item" ||
+				{
+					cd "/tmp/$item" || return 1
+					sudo -u "$name" git pull --force origin master
+				}
+				cd "/tmp/$item" || exit 1
+				sudo -u "$username" -D "/tmp/$item" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
 			fi
 		fi
 	done

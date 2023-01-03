@@ -3,7 +3,7 @@ source scripts/utils.sh
 source scripts/$1.sh
 
 # ESSENTIAL
-base=(sudo sed)
+base=(sudo sed curl stow)
 pkginstall root ${base[@]} || "Error: could not install UTILS packages."
 
 # ADD USER
@@ -17,13 +17,17 @@ fi
 sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
 
 # BASIC UTILS
-utils=($AURHELPER curl stow)
-pkginstall $username ${utils[@]} || "Error: could not install UTILS packages."
+aurhelperinstall $username || "Error: could not install aur helper."
 
-# # ZSH
-# zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
-# pkginstall ${zsh[@]} || "Error: could not install ZSH packages."
-# cd configs && stow zsh -t /home/$username/
+# FOLDERS
+sudo -u $username mkdir  /home/$username/documents  /home/$username/developments  /home/$username/repositories  /home/$username/workspaces
+sudo -u $username mkdir -p /home/$username/developments/linux-config
+sudo -i $username git clone https://github.com/nash169/linux-config.git /home/$username/developments/linux-config
+
+# ZSH
+zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
+pkginstall ${zsh[@]} || "Error: could not install ZSH packages."
+cd /home/$username/developments/linux-config/configs && sudo -u bernardo stow zsh -t /home/$username/
 
 # # SSH & GIT
 # stow configs/ssh -t /home/$username/
