@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Basic package installation
-scripts/modules/init.sh $1
+source scripts/modules/init.sh $1
 
 # Create user
 username=$( scripts/modules/user.sh )
