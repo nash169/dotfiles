@@ -42,14 +42,14 @@ xorg=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbackli
 pkginstall $username ${xorg[@]} || "Error: could not install XORG packages."
 cd /home/$username/developments/linux-config/configs && sudo -u $username stow xserver -t /home/$username/
 
-gitmakeinstall https://github.com/nash169/dwm.git
+gitmakeinstall https://github.com/nash169/dwm.git || "Error: could not install TWM packages."
 desktop=(xcompmgr feh slock dmenu)
 pkginstall $username ${desktop[@]} || "Error: could not install DESKTOP packages."
 cd /home/$username/developments/linux-config/configs && sudo -u $username stow walls -t /home/$username/
 sudo -u $username feh --bg-scale /home/$username/.config/walls/01.png
 
 # TERMINAL
-gitmakeinstall $username https://github.com/nash169/st.git
+gitmakeinstall $username https://github.com/nash169/st.git || "Error: could not install TERMINAL packages."
 terminal=(tmux exa nerd-fonts-hack)
 pkginstall $username ${terminal[@]} || "Error: could not install TERMINAL packages."
 
