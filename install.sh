@@ -18,46 +18,46 @@ sudo -u $username mkdir -p /home/$username/developments/linux-config
 sudo -u $username git clone https://github.com/nash169/linux-config.git /home/$username/developments/linux-config
 
 # Install & configure zsh
-scripts/modules/zsh.sh $1 $username
+source scripts/modules/zsh.sh $1 $username
 
 # # Configure ssh & git
-# scripts/modules/git.sh $1 $username
+# source scripts/modules/git.sh $1 $username
 
 # # DESkTOP
-# scripts/modules/desktop.sh $1 $username
+# source scripts/modules/desktop.sh $1 $username
 
 # TERMINAL
-# scripts/modules/terminal.sh $1 $username
+# source scripts/modules/terminal.sh $1 $username
 
 # # EDITOR
-# scripts/modules/editor.sh $1 $username
+# source scripts/modules/editor.sh $1 $username
 
 # # DEVELOP
-# scripts/modules/develop.sh $1 $username
+# source scripts/modules/develop.sh $1 $username
 
 # # EXPLORER
-# scripts/modules/explorer.sh $1 $username
+# source scripts/modules/explorer.sh $1 $username
 
 # # BROWSER
-# scripts/modules/browser.sh $1 $username
+# source scripts/modules/browser.sh $1 $username
 
 # # MULTIMEDIA
-# scripts/modules/media.sh $1 $username
+# source scripts/modules/media.sh $1 $username
 
 # # READER
-# scripts/modules/reader.sh $1 $username
+# source scripts/modules/reader.sh $1 $username
 
 # # EMAIL
-# scripts/modules/email.sh $1 $username
+# source scripts/modules/email.sh $1 $username
 
 # # SOUND
-# scripts/modules/sound.sh $1 $username
+# source scripts/modules/sound.sh $1 $username
 
 # # BLUETOOTH
-# scripts/modules/bluetooth.sh $1 $username
+# source scripts/modules/bluetooth.sh $1 $username
 
 # # DOWNLOAD
-# scripts/modules/download.sh $1 $username
+# source scripts/modules/download.sh $1 $username
 
 # #
 # sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
