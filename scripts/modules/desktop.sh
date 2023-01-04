@@ -1,6 +1,6 @@
 #!/bin/bash
-source ../distros/$1.sh
-source ../utils.sh
+source scripts/distros/$1.sh
+source scripts/utils.sh
 
 xorg=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight)
 pkginstall $2 ${xorg[@]} || "Error: could not install XORG packages."

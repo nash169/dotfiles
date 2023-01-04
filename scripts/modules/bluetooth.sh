@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../distros/$1.sh
+source scripts/distros/$1.sh
 
 bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
 pkginstall $2 ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."

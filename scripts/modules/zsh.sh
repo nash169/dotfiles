@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../distros/$1.sh
+source scripts/distros/$1.sh
 
 zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
 pkginstall $2 ${zsh[@]} || "Error: could not install ZSH packages."

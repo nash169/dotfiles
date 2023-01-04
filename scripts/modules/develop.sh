@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../distros/$1.sh
+source scripts/distros/$1.sh
 
 develop=(cmake texlive-core eigen waf clang)
 pkginstall $2 ${develop[@]} || "Error: could not install DEVELOP packages."
