@@ -2,6 +2,8 @@
 source scripts/utils.sh
 source scripts/$1.sh
 
+refreshkeys || "Error: could not refresh keys."
+
 # ESSENTIAL
 base=(sudo sed curl stow)
 pkginstall root ${base[@]} || "Error: could not install UTILS packages."
@@ -28,6 +30,7 @@ sudo -u $username git clone https://github.com/nash169/linux-config.git /home/$u
 zsh=(zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
 pkginstall $username ${zsh[@]} || "Error: could not install ZSH packages."
 cd /home/$username/developments/linux-config/configs && sudo -u $username stow zsh -t /home/$username/
+chsh -s /bin/zsh "$name" >/dev/null 2>&1
 
 # SSH & GIT
 cd /home/$username/developments/linux-config/configs && sudo -u $username stow ssh -t /home/$username/
