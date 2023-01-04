@@ -6,7 +6,7 @@ xorg=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbackli
 pkginstall $2 ${xorg[@]} || "Error: could not install XORG packages."
 cd /home/$2/developments/linux-config/configs && sudo -u $2 stow xserver -t /home/$2/
 
-gitmakeinstall https://github.com/nash169/dwm.git || "Error: could not install TWM packages."
+gitmakeinstall $2 https://github.com/nash169/dwm.git || "Error: could not install TWM packages."
 desktop=(xcompmgr feh slock dmenu)
 pkginstall $2 ${desktop[@]} || "Error: could not install DESKTOP packages."
 cd /home/$2/developments/linux-config/configs && sudo -u $2 stow walls -t /home/$2/

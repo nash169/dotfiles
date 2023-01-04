@@ -26,11 +26,11 @@ source /root/linux-config/scripts/modules/git.sh $1 $username
 # DESkTOP
 source /root/linux-config/scripts/modules/desktop.sh $1 $username
 
-TERMINAL
-source /root/linux-config/scripts/modules/terminal.sh $1 $username
+# # TERMINAL
+# source /root/linux-config/scripts/modules/terminal.sh $1 $username
 
-# EDITOR
-source /root/linux-config/scripts/modules/editor.sh $1 $username
+# # EDITOR
+# source /root/linux-config/scripts/modules/editor.sh $1 $username
 
 # # DEVELOP
 # source /root/linux-config/scripts/modules/develop.sh $1 $username
