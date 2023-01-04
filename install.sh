@@ -1,6 +1,4 @@
 #!/bin/bash
-source scripts/utils.sh
-source scripts/$1.sh
 
 # Basic package installation
 sh scripts/modules/init.sh $1
