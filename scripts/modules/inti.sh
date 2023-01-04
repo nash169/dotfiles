@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../distros/$1.sh
+source scripts/distros/$1.sh
 
 # Refresh arch keyring
 refreshkeys || "Error: could not refresh keys."

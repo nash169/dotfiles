@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../utils.sh
+source scripts/utils.sh
 
 # ADD USER
 read -p "Insert user name (and pass): " username

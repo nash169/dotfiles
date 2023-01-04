@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../distros/$1.sh
+source scripts/distros/$1.sh
 
 cd /home/$2/developments/linux-config/configs && sudo -u $2 stow ssh -t /home/$2/
 ssh=(openssh keychain)

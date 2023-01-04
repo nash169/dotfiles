@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../distros/$1.sh
+source scripts/distros/$1.sh
 
 editor=(neovim python-pynvim) # ninja tree-sitter lua luarocks
 pkginstall $2 ${editor[@]} || "Error: could not install EDITOR packages."
