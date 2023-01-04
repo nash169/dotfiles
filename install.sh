@@ -18,7 +18,7 @@ sudo -u $username mkdir -p /home/$username/developments/linux-config
 sudo -u $username git clone https://github.com/nash169/linux-config.git /home/$username/developments/linux-config
 
 # Install & configure zsh
-source scripts/modules/zsh.sh $1 $username
+source /root/linux-config/scripts/modules/zsh.sh $1 $username
 
 # # Configure ssh & git
 # source scripts/modules/git.sh $1 $username
