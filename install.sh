@@ -20,47 +20,47 @@ sudo -u $username git clone https://github.com/nash169/linux-config.git /home/$u
 # Install & configure zsh
 source /root/linux-config/scripts/modules/zsh.sh $1 $username
 
-# # Configure ssh & git
-# source scripts/modules/git.sh $1 $username
+# Configure ssh & git
+source /root/linux-config/scripts/modules/git.sh $1 $username
 
-# # DESkTOP
-# source scripts/modules/desktop.sh $1 $username
+# DESkTOP
+source /root/linux-config/scripts/modules/desktop.sh $1 $username
 
-# TERMINAL
-# source scripts/modules/terminal.sh $1 $username
+TERMINAL
+source /root/linux-config/scripts/modules/terminal.sh $1 $username
 
-# # EDITOR
-# source scripts/modules/editor.sh $1 $username
+# EDITOR
+source /root/linux-config/scripts/modules/editor.sh $1 $username
 
 # # DEVELOP
-# source scripts/modules/develop.sh $1 $username
+# source /root/linux-config/scripts/modules/develop.sh $1 $username
 
 # # EXPLORER
-# source scripts/modules/explorer.sh $1 $username
+# source /root/linux-config/scripts/modules/explorer.sh $1 $username
 
 # # BROWSER
-# source scripts/modules/browser.sh $1 $username
+# source /root/linux-config/scripts/modules/browser.sh $1 $username
 
 # # MULTIMEDIA
-# source scripts/modules/media.sh $1 $username
+# source /root/linux-config/scripts/modules/media.sh $1 $username
 
 # # READER
-# source scripts/modules/reader.sh $1 $username
+# source /root/linux-config/scripts/modules/reader.sh $1 $username
 
 # # EMAIL
-# source scripts/modules/email.sh $1 $username
+# source /root/linux-config/scripts/modules/email.sh $1 $username
 
 # # SOUND
-# source scripts/modules/sound.sh $1 $username
+# source /root/linux-config/scripts/modules/sound.sh $1 $username
 
 # # BLUETOOTH
-# source scripts/modules/bluetooth.sh $1 $username
+# source /root/linux-config/scripts/modules/bluetooth.sh $1 $username
 
 # # DOWNLOAD
-# source scripts/modules/download.sh $1 $username
+# source /root/linux-config/scripts/modules/download.sh $1 $username
 
-# #
-# sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
+#
+sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
 
 # #  Node support
 # pkginstall nodejs npm
