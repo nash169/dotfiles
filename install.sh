@@ -27,8 +27,8 @@ configuressh $username || "Error!"
 # DESkTOP
 configuredesktop $username || "Error!"
 
-# # TERMINAL
-# source /root/linux-config/scripts/modules/terminal.sh $1 $username
+# TERMINAL
+configureterminal $username || "Error!"
 
 # # EDITOR
 # source /root/linux-config/scripts/modules/editor.sh $1 $username
