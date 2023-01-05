@@ -44,8 +44,14 @@ configuredesktop() {
     pkginstall $1 ${xorg[@]} || "Error: could not install XORG packages."
     cd /home/$1/developments/linux-config/configs && sudo -u $1 stow xserver -t /home/$1/
 
-    gitmakeinstall $1 https://github.com/nash169/dwm.git || "Error: could not install TWM packages."
+    gitmakeinstall https://github.com/nash169/dwm.git || "Error: could not install TWM packages."
     desktop=(xcompmgr feh slock dmenu)
     pkginstall $1 ${desktop[@]} || "Error: could not install DESKTOP packages."
     cd /home/$1/developments/linux-config/configs && sudo -u $1 stow walls -t /home/$1/
+}
+
+configureterminal() {
+    gitmakeinstall https://github.com/nash169/st.git || "Error: could not install TERMINAL packages."
+    terminal=(tmux exa nerd-fonts-hack-complete-git)
+    pkginstall $1 ${terminal[@]} || "Error: could not install TERMINAL packages."
 }
