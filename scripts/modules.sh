@@ -8,7 +8,7 @@ installbasics() {
     # refreshkeys || "Error: could not refresh keys."
 
     # Install base packages
-    base=(sudo sed curl stow)
+    base=(sudo sed curl stow unzip)
     pkginstall root ${base[@]} || "Error: could not install UTILS packages."
 }
 
@@ -52,6 +52,9 @@ configuredesktop() {
 
 configureterminal() {
     gitmakeinstall https://github.com/nash169/st.git || "Error: could not install TERMINAL packages."
-    terminal=(tmux exa nerd-fonts-hack-complete-git)
+    terminal=(tmux exa)
     pkginstall $1 ${terminal[@]} || "Error: could not install TERMINAL packages."
+
+    curl --output-dir /tmp/ https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip
+    unzip /tmp/Hack-v3.003-ttf.zip
 }
