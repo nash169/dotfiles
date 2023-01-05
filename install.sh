@@ -1,15 +1,16 @@
 #!/bin/bash
+source scripts/modules.sh $1
 
 # Basic package installation
-source scripts/modules/init.sh $1
+installbasics || "Error!"
 
 # Create user
-username=$( scripts/modules/user.sh )
+username=$( createuser ) || "Error!"
 
 # Allow sudo without pass
 sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
 
-# Aur helper (inly for Arch)
+# Aur helper (only for Arch)
 aurhelperinstall $username || "Error: could not install aur helper."
 
 # Create basic setup
@@ -18,13 +19,13 @@ sudo -u $username mkdir -p /home/$username/developments/linux-config
 sudo -u $username git clone https://github.com/nash169/linux-config.git /home/$username/developments/linux-config
 
 # Install & configure zsh
-source /root/linux-config/scripts/modules/zsh.sh $1 $username
+configureshell $username || "Error!"
 
 # Configure ssh & git
-source /root/linux-config/scripts/modules/git.sh $1 $username
+configuressh $username || "Error!"
 
 # DESkTOP
-source /root/linux-config/scripts/modules/desktop.sh $1 $username
+configuredesktop $username || "Error!"
 
 # # TERMINAL
 # source /root/linux-config/scripts/modules/terminal.sh $1 $username
