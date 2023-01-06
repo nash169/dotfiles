@@ -56,7 +56,7 @@ configureterminal() {
     pkginstall $1 ${terminal[@]} || "Error: could not install TERMINAL packages."
 
     sudo -u $1 curl --output-dir /tmp/ -LO https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip
-    sudo -u $1 unzip /tmp/Hack-v3.003-ttf.zip
+    unzip /tmp/Hack-v3.003-ttf.zip -d /tmp/
     sudo -u $1 mkdir -p /home/$1/.local/share/fonts/
     sudo -u $1 cp /tmp/ttf/* /home/$1/.local/share/fonts/
 }
