@@ -44,14 +44,14 @@ configuredesktop() {
     pkginstall $1 ${xorg[@]} || "Error: could not install XORG packages."
     cd /home/$1/developments/linux-config/configs && sudo -u $1 stow xserver -t /home/$1/
 
-    gitmakeinstall https://github.com/nash169/dwm.git || "Error: could not install TWM packages."
+    gitmakeinstall $1 https://github.com/nash169/dwm.git || "Error: could not install TWM packages."
     desktop=(xcompmgr feh slock dmenu)
     pkginstall $1 ${desktop[@]} || "Error: could not install DESKTOP packages."
     cd /home/$1/developments/linux-config/configs && sudo -u $1 stow walls -t /home/$1/
 }
 
 configureterminal() {
-    gitmakeinstall https://github.com/nash169/st.git || "Error: could not install TERMINAL packages."
+    gitmakeinstall $1 https://github.com/nash169/st.git || "Error: could not install TERMINAL packages."
     terminal=(tmux exa)
     pkginstall $1 ${terminal[@]} || "Error: could not install TERMINAL packages."
 
@@ -59,4 +59,10 @@ configureterminal() {
     unzip /tmp/Hack-v3.003-ttf.zip -d /tmp/
     sudo -u $1 mkdir -p /home/$1/.local/share/fonts/
     sudo -u $1 cp /tmp/ttf/* /home/$1/.local/share/fonts/
+}
+
+configureeditor() {
+    editor=(neovim python-pynvim) # ninja tree-sitter lua luarocks
+    pkginstall $1 ${editor[@]} || "Error: could not install EDITOR packages."
+    cd /home/$1/developments/linux-config/configs && sudo -u $1 stow neovim -t /home/$1/
 }
