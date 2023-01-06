@@ -43,10 +43,20 @@ install_category() {
 
 # Install make-based package from git -> $1: user, $2: git address
 gitmakeinstall() {
-	progname="$(basename "$1" .git)"
+	progname="$(basename "$2" .git)"
 	rm -rf /tmp/"$progname"*
 	dir="/tmp/$progname"
-	git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return 1 ; make clean install >/dev/null 2>&1;}
+
+	sudo -u "$1" git -C "/tmp" clone --depth 1 --single-branch \
+		--no-tags -q "$2" "$dir" ||
+		{
+			cd "$dir" || return 1
+			sudo -u "$1" git pull --force origin master
+		}
+	cd "$dir" || exit 1
+	make >/dev/null 2>&1
+	make install >/dev/null 2>&1
+	cd /tmp || return 1
 }
 
 # Install python package via pip
