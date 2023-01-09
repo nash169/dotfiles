@@ -66,3 +66,52 @@ configureeditor() {
     pkginstall $1 ${editor[@]} || "Error: could not install EDITOR packages."
     cd /home/$1/developments/linux-config/configs && sudo -u $1 stow neovim -t /home/$1/
 }
+
+developtools() {
+    develop=(cmake texlive-core eigen clang)
+    pkginstall $1 ${develop[@]} || "Error: could not install DEVELOP packages."
+    cd /home/$1/developments/linux-config/configs && sudo -u $1 stow format -t /home/$1/
+}
+
+fileexplorer() {
+    explorer=(ripgrep fzf lf-git ueberzug)
+    pkginstall $1 ${explorer[@]} || "Error: could not install EXPLORER packages."
+}
+
+installbrowser() {
+    browser=(firefox)
+    pkginstall $1 ${browser[@]} || "Error: could not install BROWSER packages."
+}
+
+multimedia() {
+    multimedia=(sxiv mpd mpc mpv)
+    pkginstall $1 ${multimedia[@]} || "Error: could not install MULTIMEDIA packages."
+}
+
+readertools() {
+    reader=(zathura zathura-pdf-mupdf zotero)
+    pkginstall $1 ${reader[@]} || "Error: could not install READER packages."
+}
+
+configureemail() {
+    email=(mutt-wizard-git)
+    pkginstall $1 ${email[@]} || "Error: could not install EMAIL packages."
+}
+
+configuresound() {
+    audio=(wireplumber pipewire-pulse pulsemixer)
+    pkginstall $1 ${audio[@]} || "Error: could not install AUDIO packages."
+}
+
+configurebluetooth() {
+    bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
+    pkginstall $1 ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."
+    systemctl enable bluetooth.service
+    systemctl start bluetooth.service
+    sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
+}
+
+downloadtools() {
+    download=(rtorrent-ps youtube-dl)
+    pkginstall $1 ${download[@]} || "Error: could not install DOWNLOAD packages."
+}
