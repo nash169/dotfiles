@@ -29,3 +29,11 @@ function zsh_add_completion() {
 	completion_file="$(basename "${completion_file_path}")"
 	if [ "$2" = true ] && compinit "${completion_file:1}"
 }
+
+sshgen() {
+    ssh-keygen -t ed25519 -C "${1}"
+}
+
+gitssh() {
+    GIT_SSH_COMMAND="ssh -i /root/.ssh/'${1}' -o IdentitiesOnly=yes" git ${2}
+}
