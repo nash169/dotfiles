@@ -71,16 +71,11 @@ sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
 # pkginstall python-pip
 # pip install pynvim --user
 
-# # Package manager
-# git clone https://github.com/wbthomason/packer.nvim ~/.local/share/nvim/site/pack/packer/start/packer.nvim
-
-# pkginstall ripgrep fzf ranger
+# pkginstall ripgrep fzf lf
 
 # # Allow to draw image in terminal
 # pkginstall python-ueberzug-git
 
 # # Don't know yet
 # pkginstall neovim-remote
-# npm install -g tree-sitter-cli
-
-# nvim -u $HOME/.config/nvim/init.lua +PackerInstall
+#  install -g tree-sitter-cli
