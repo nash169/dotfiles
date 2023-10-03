@@ -402,3 +402,5 @@ __latexindent_temp.tex
 # plugins
 configs/neovim/.config/nvim/autoload
 configs/ranger/.config/ranger/plugins
+
+lazy-lock.json
