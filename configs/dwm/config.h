@@ -92,8 +92,8 @@ static const char *audio_next[]  = { "mpc", "next", NULL };
 static const char *audio_prev[]  = { "mpc", "prev", NULL };
 
 /* keyboard brightness */
-static const char *kbd_light_up[]  = { "brightnessctl", "--device='smc::kbd_backlight'", "set", "10%+", NULL };
-static const char *kbd_light_down[]  = { "brightnessctl", "--device='smc::kbd_backlight'", "set", "10%-", NULL };
+static const char *kbd_light_up[]  = { "brightnessctl", "--device=smc::kbd_backlight", "set", "10%+", NULL };
+static const char *kbd_light_down[]  = { "brightnessctl", "--device=smc::kbd_backlight", "set", "10%-", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
