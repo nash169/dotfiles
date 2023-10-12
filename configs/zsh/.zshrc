@@ -27,7 +27,7 @@ zle -N down-line-or-beginning-search
 autoload -Uz colors && colors
 
 # Useful Functions
-source "$ZDOTDIR/zsh-functions"
+source "zsh-functions"
 
 # Plugins
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -41,6 +41,6 @@ source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 [ -f /usr/share/fzf/key-bindings.zsh ] && source /usr/share/fzf/key-bindings.zsh
 
 # Normal files to source
-zsh_add_file "zsh-aliases"
-zsh_add_file "zsh-prompt"
+source "zsh-aliases"
+source "zsh-prompt"
 
