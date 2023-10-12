@@ -1,5 +1,5 @@
 # Linux Configuration
-This repository contains my (Arch) Linux configuration.
+This repository contains my dotfiles.
 
 ## ToDo list
 - complete configurator
