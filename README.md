@@ -7,3 +7,4 @@ This repository contains my dotfiles.
 - auto open compilation window for latex
 - zsh shell not working properly yet
 - remove clickable x from buffers
+- add slock
