@@ -72,8 +72,22 @@ return {
 
      -- configure clangd server
      lspconfig["clangd"].setup({
+      cmd = {
+        vim.fn.stdpath("data") .. "/mason/bin/clangd",
+        "--background-index", "--cross-file-rename", "--header-insertion=never"
+      },
       capabilities = capabilities,
       on_attach = on_attach,
+      filetypes = { "c", "cpp", "h", "hpp", "objc" },
+      rootPatterns = { ".git", "compile_flags.txt", "compile_commands.json" },
+      handlers = {
+        ["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+          virtual_text = true,
+          signs = true,
+          underline = true,
+          update_in_insert = false,
+        }),
+      },
     })
 
     -- configure python server

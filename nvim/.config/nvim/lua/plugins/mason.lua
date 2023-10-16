@@ -39,7 +39,7 @@ return {
 			ensure_installed = {
 				"stylua", -- lua formatter
 				"autopep8", -- python formatter
-				"clang-format",
+				"clang-format", -- c++ formatter
 				"pylint", -- python linter
 			},
 		})

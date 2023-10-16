@@ -1,47 +1,41 @@
 return {
-	{
-		"nvim-treesitter/nvim-treesitter",
-		event = { "BufReadPre", "BufNewFile" },
-		build = ":TSUpdate",
-		dependencies = {
-			"windwp/nvim-ts-autotag",
-		},
-		config = function()
-			-- import nvim-treesitter plugin
-			local treesitter = require("nvim-treesitter.configs")
+	"nvim-treesitter/nvim-treesitter",
+	event = { "BufReadPre", "BufNewFile" },
+	build = ":TSUpdate",
+	
+	config = function()
+		require'nvim-treesitter.configs'.setup {
+			-- A list of parser names, or "all" (the five listed parsers should always be installed)
+			ensure_installed = { "c", "cpp", "python", "lua" },
+			
+			-- Automatically install missing parsers when entering buffer
+			auto_install = true,
+			
+			-- List of parsers to ignore installing (or "all")
+			ignore_install = { "latex" },
+			
+			highlight = {
+				enable = true,
+			
+				-- list of language that will be disabled
+				disable = { "latex" },
 
-			-- configure treesitter
-			treesitter.setup({ -- enable syntax highlighting
-				ignore_install = { "latex" },
+				-- disable slow treesitter highlight for large files
+				disable = function(lang, buf)
+					local max_filesize = 100 * 1024 -- 100 KB
+					local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+					if ok and stats and stats.size > max_filesize then
+						return true
+					end
+				end,
+			},
 
-				highlight = {
-					enable = true,
-					disable = { "latex" },
-				},
+			-- enable indentation
+			indent = {
+				enable = true,
+				disable = { "cpp" },
+			}
+		}
 
-				-- enable indentation
-				indent = {
-					enable = true,
-					disable = { "python" },
-				},
-				-- enable autotagging (w/ nvim-ts-autotag plugin)
-				autotag = { enable = true },
-				-- ensure these language parsers are installed
-				ensure_installed = {
-					"c",
-					"cpp",
-					"python",
-					"lua",
-					"gitignore",
-				},
-				-- enable nvim-ts-context-commentstring plugin for commenting tsx and jsx
-				context_commentstring = {
-					enable = true,
-					enable_autocmd = false,
-				},
-				-- auto install above language parsers
-				auto_install = true,
-			})
-		end,
-	},
+	end,
 }
