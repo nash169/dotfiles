@@ -1,0 +1,9 @@
+sshgen() {
+    ssh-keygen -t ed25519 -C "${1}"
+}
+
+gitssh() {
+    COMMAND="ssh -i ~/.ssh/${1}_ed25519 -o IdentitiesOnly=yes"
+    shift
+    GIT_SSH_COMMAND=$COMMAND git $@
+}
