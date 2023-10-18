@@ -394,13 +394,9 @@ TSWLatexianTemp*
 # macOS files
 *.DS_Store
 
-# VScode
-.vscode
-
 __latexindent_temp.tex
 
 # plugins
-configs/neovim/.config/nvim/autoload
-configs/ranger/.config/ranger/plugins
+zsh/.config/zsh/plugins/
 
 lazy-lock.json
