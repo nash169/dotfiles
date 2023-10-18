@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# source ~/.oh-my-zsh/lib/completion.zsh
+# source ~/.oh-my-zsh/lib/history.zsh
+# source ~/.oh-my-zsh/lib/key-bindings.zsh>
+
 # some useful options (man zshoptions)
 setopt autocd extendedglob nomatch menucomplete
 setopt interactive_comments
