@@ -1,33 +1,73 @@
 #!/bin/bash
 source scripts/modules.sh $1
 
-# Basic package installation
-installbasics || "Error!"
+# get linux distro
+DISTRO=$(awk '/DISTRIB_ID=/' /etc/*-release | sed 's/DISTRIB_ID=//' | tr '[:upper:]' '[:lower:]')
 
-# Create user
-username=$( createuser ) || "Error!"
+if [[ "$DISTRO" == "arch" ]]; then
+    # refresh arch keyring
+    pacman --noconfirm -Sy archlinux-keyring >/dev/null 2>&1
+    # install aur helper
+    sudo -u "$1" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$AURHELPER.git" "/tmp/$AURHELPER" ||
+	{
+	    cd "/tmp/$AURHELPER" || return 1
+	    sudo -u "$1" git pull --force origin master
+	}
+	cd "/tmp/$AURHELPER" || exit 1
+	sudo -u "$1" -D "/tmp/$AURHELPER" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+fi
 
-# Allow sudo without pass
+# install base packs
+base=(sudo sed curl stow unzip)
+pkginstall root ${base[@]} || "Error: could not install UTILS packages."
+
+# create user
+adduser() {
+    read -p "Insert user name: " username
+    if id "$username" &>/dev/null; then
+        echo $username
+    else
+        adduser $username wheel || "Error: could not add user."
+        addsudo $username || "Error: could not add user to sudoers."
+        echo $username
+    fi
+}
+username=$( adduser ) || "Error!"
+
+# allow sudo without pass
 sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
 
-# Aur helper (only for Arch)
-aurhelperinstall $username || "Error: could not install aur helper."
+# create basic folders and get dotfiles
+sudo -u $username mkdir  /home/$username/docs  /home/$username/devs  /home/$username/repos  /home/$username/ws
+sudo -u $username git clone https://github.com/nash169/dotfiles.git /home/$username/devs/dotfiles
 
-# Create basic setup
-sudo -u $username mkdir  /home/$username/documents  /home/$username/developments  /home/$username/repositories  /home/$username/workspaces
-sudo -u $username mkdir -p /home/$username/developments/linux-config
-sudo -u $username git clone https://github.com/nash169/linux-config.git /home/$username/developments/linux-config
+# setup shell
+shell=(zsh)
+pkginstall $1 ${shell[@]} || "Error: could not install ZSH packages."
+cd /home/$1/devs/dotfiles && sudo -u $1 stow zsh -t /home/$1/
+chsh -s /bin/zsh "$1" >/dev/null 2>&1
 
-# Install & configure zsh
-configureshell $username || "Error!"
+# setup ssh
+ssh=(openssh)
+pkginstall $1 ${ssh[@]} || "Error: could not install SSH packages."
+read -p "Insert your email: " email
+sudo -u $1 ssh-keygen -t ed25519 -C "$email"
 
-# Configure ssh & git
-configuressh $username || "Error!"
-
-# DESkTOP
+# tiling window manager
 configuredesktop $username || "Error!"
 
-# TERMINAL
+# terminal
+ST="/home/bernardo/devs/st"
+git clone git@github.com:nash169/st-tmp.git $ST 
+git -C $ST remote add upstream git://git.suckless.org/st 
+git -C $ST fetch upstream
+git -C $ST merge upstream/master
+git -C $ST checkout custom
+git -C $ST rebase upstream/master
+
+terminal=(tmux exa bat)
+pkginstall $1 ${terminal[@]} || "Error: could not install TERMINAL packages."
+
 configureterminal $username || "Error!"
 
 # # EDITOR
@@ -87,9 +127,4 @@ sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
 # git -C $DWM fetch upstream
 # git -C $DWM merge upstream/master
 
-ST="/home/bernardo/devs/st"
-git clone git@github.com:nash169/st-tmp.git $ST 
-git -C $ST remote add upstream git://git.suckless.org/st 
-git -C $ST fetch upstream
-git -C $ST merge upstream/master
 
