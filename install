@@ -54,6 +54,14 @@ read -p "Insert your email: " email
 sudo -u $1 ssh-keygen -t ed25519 -C "$email"
 
 # tiling window manager
+DWM="/home/bernardo/devs/st"
+git clone git@github.com:nash169/st-tmp.git $DWM 
+git -C $DWM remote add upstream git://git.suckless.org/dwm 
+git -C $DWM fetch upstream
+git -C $DWM merge upstream/master
+git -C $DWM checkout custom
+git -C $DWM rebase upstream/master
+
 configuredesktop $username || "Error!"
 
 # terminal
