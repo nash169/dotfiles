@@ -7,6 +7,7 @@ This repository contains my dotfiles.
 - remove clickable x from buffers
 - add slock
 - zsh not working properly in vim mode
+- check lazygit
 
 ## useful links
 - https://medium.com/@schtoeffel/you-don-t-need-more-than-one-cursor-in-vim-2c44117d51db
