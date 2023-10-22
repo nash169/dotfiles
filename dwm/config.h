@@ -100,8 +100,9 @@ static const char* kbd_light_down[] = {"brightnessctl", "--device=smc::kbd_backl
 
 static const Key keys[] = {
     /* modifier                     key        function        argument */
-    {MODKEY, XK_e, spawn, {.v = dmenucmd}},
+    {MODKEY, XK_space, spawn, {.v = dmenucmd}},
     {MODKEY, XK_Return, spawn, {.v = termcmd}},
+    {MODKEY, XK_e, spawn, {.v = (const char*[]){"st", "-e", "lf", NULL}}},
     {MODKEY, XK_b, togglebar, {0}},
     {MODKEY | ShiftMask, XK_j, rotatestack, {.i = +1}},
     {MODKEY, XK_r, rotatestack, {.i = -1}},
@@ -117,7 +118,7 @@ static const Key keys[] = {
     {MODKEY, XK_t, setlayout, {.v = &layouts[0]}},
     {MODKEY, XK_f, setlayout, {.v = &layouts[1]}},
     {MODKEY, XK_m, setlayout, {.v = &layouts[2]}},
-    {MODKEY, XK_space, setlayout, {0}},
+    // {MODKEY, XK_space, setlayout, {0}},
     {MODKEY | ShiftMask, XK_space, togglefloating, {0}},
     {MODKEY, XK_0, view, {.ui = ~0}},
     {MODKEY | ShiftMask, XK_0, tag, {.ui = ~0}},
