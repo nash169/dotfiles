@@ -52,7 +52,7 @@ configuredesktop() {
 
 configureterminal() {
     gitmakeinstall $1 https://github.com/nash169/st.git || "Error: could not install TERMINAL packages."
-    terminal=(tmux exa)
+    terminal=(tmux exa bat)
     pkginstall $1 ${terminal[@]} || "Error: could not install TERMINAL packages."
 
     sudo -u $1 curl --output-dir /tmp/ -LO https://github.com/source-foundry/Hack/releases/download/v3.003/Hack-v3.003-ttf.zip
