@@ -12,5 +12,9 @@ opt.shiftwidth = 4
 -- linebreak for latex (wrap is enabled by default)
 opt.linebreak = true
 
--- highlight the current cursor line
+-- highlight the current cursor line``
 opt.cursorline = true
+
+-- Disable autocomment newline (lua way of doing it does not work)
+vim.cmd("autocmd BufEnter * set formatoptions-=cro")
+vim.cmd("autocmd BufEnter * setlocal formatoptions-=cro")
