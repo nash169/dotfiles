@@ -21,6 +21,8 @@ return {
                 "-shell-escape",
             },
         }
+        -- disable autu open compiler log if there are only warnings
+        vim.g.vimtex_quickfix_open_on_warning = 0
 
         -- -- Or with a generic interface:
         -- let g:vimtex_view_general_viewer = 'okular'
