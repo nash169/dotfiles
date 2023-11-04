@@ -78,6 +78,29 @@ pkginstall $1 ${terminal[@]} || "Error: could not install TERMINAL packages."
 
 configureterminal $username || "Error!"
 
+
+tex=(
+    texlive-bin
+    texlive-fontsrecomended
+    texlive-latexextra
+    texlive-latexrecomended
+    texlive-latex
+    texlive-basic
+    texlive-xetex
+    texlive-mathscience
+    texlive-fontsextra
+    texlive-langenglish
+    texlive-context
+    texlive-luatex
+    texlive-plaingeneric
+    texlive-binextra
+    texlive-bibtexextra
+    texlive-pictures
+    texlive-langfrench
+    texlive-langgerman
+    texlive-fontutils
+    )
+
 # # EDITOR
 # source /root/linux-config/scripts/modules/editor.sh $1 $username
 
