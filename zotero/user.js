@@ -1,0 +1,15 @@
+user_pref("extensions.zotero.dataDir", "/home/bernardo/zotero");
+user_pref("extensions.zotero.fileHandler.pdf", "/bin/zathura");
+user_pref("extensions.zotero.groups.copyAnnotations", false);
+user_pref("extensions.zotero.groups.copyChildFileAttachments", false);
+user_pref("extensions.zotero.groups.copyChildLinks", false);
+user_pref("extensions.zotero.sync.server.username", "nash169");
+user_pref("extensions.zotero.sync.storage.groups.enabled", false);
+user_pref("extensions.zotero.sync.storage.protocol", "webdav");
+user_pref("extensions.zotero.sync.storage.url", "nasfichera.myqnapcloud.com:5301/bernardo_sync");
+user_pref("extensions.zotero.sync.storage.username", "Bernardo");
+user_pref("extensions.zotero.translators.better-bibtex.citekeyFormat", "auth.lower+\"_\"+shorttitle(1,0)+\"_\"+year");
+user_pref("extensions.zotero.translators.better-bibtex.citekeyFormatEditing", "auth.lower+\"_\"+shorttitle(1,0)+\"_\"+year");
+user_pref("extensions.zotfile.lower_case", true);
+user_pref("extensions.zotfile.max_authors", 1);
+user_pref("extensions.zotfile.replace_blanks", true);
