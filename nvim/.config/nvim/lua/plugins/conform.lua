@@ -14,6 +14,12 @@ return {
                 timeout_ms = 500,
                 lsp_fallback = true,
             },
+
+            formatters = {
+                autopep8 = {
+                    prepend_args = { "--line-length 150" },
+                },
+            },
         })
 
         vim.keymap.set({ "n", "v" }, "<leader>mp", function()
