@@ -13,3 +13,4 @@ user_pref("extensions.zotero.translators.better-bibtex.citekeyFormatEditing", "a
 user_pref("extensions.zotfile.lower_case", true);
 user_pref("extensions.zotfile.max_authors", 1);
 user_pref("extensions.zotfile.replace_blanks", true);
+user_pref("extensions.zotero.zoterotag.rules", "[{\"id\":1,\"tags\":[\"/unread\"],\"untags\":[],\"group\":\"3\",\"actions\":[{\"event\":\"add\",\"operation\":\"add\",\"description\":\"add tags when creating new item\"}]},{\"id\":2,\"tags\":[\"/unread\"],\"untags\":[],\"group\":\"3\",\"actions\":[{\"event\":\"open\",\"operation\":\"remove\",\"description\":\"remove tags when opening item\"}]},{\"id\":3,\"tags\":[\"/reading\"],\"untags\":[],\"group\":\"1\",\"actions\":[{\"event\":\"annotation add\",\"operation\":\"add\",\"description\":\"add tags when creating annotation\"}]},{\"id\":4,\"tags\":[\"/toread\"],\"untags\":[],\"group\":\"2\",\"actions\":[]}]");
