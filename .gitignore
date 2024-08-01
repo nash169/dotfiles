@@ -400,3 +400,5 @@ __latexindent_temp.tex
 zsh/.config/zsh/plugins/
 
 lazy-lock.json
+font/.local/share/fonts/.uuid
+

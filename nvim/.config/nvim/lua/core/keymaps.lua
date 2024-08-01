@@ -1,12 +1,11 @@
-vim.g.mapleader = " "
 local keymap = vim.keymap.set
 local opts = { noremap = true, silent = true }
 
 -- use jk to exit insert mode
 keymap("i", "jk", "<ESC>", { desc = "Exit insert mode with jk" })
 
--- clear search highlights
-keymap("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
+-- Clear highlights on search when pressing <Esc> in normal mode
+keymap("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
 -- window navigation
 keymap("n", "<C-h>", "<C-w>h", opts)
