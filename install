@@ -1,170 +1,264 @@
-#!/bin/bash
-source scripts/modules.sh $1
+#!/bin/sh
 
-# get linux distro
 DISTRO=$(awk '/DISTRIB_ID=/' /etc/*-release | sed 's/DISTRIB_ID=//' | tr '[:upper:]' '[:lower:]')
+AURHELPER=yay
 
-if [[ "$DISTRO" == "arch" ]]; then
-    # refresh arch keyring
-    pacman --noconfirm -Sy archlinux-keyring >/dev/null 2>&1
-    # install aur helper
-    sudo -u "$1" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$AURHELPER.git" "/tmp/$AURHELPER" ||
-	{
-	    cd "/tmp/$AURHELPER" || return 1
-	    sudo -u "$1" git pull --force origin master
-	}
-	cd "/tmp/$AURHELPER" || exit 1
-	sudo -u "$1" -D "/tmp/$AURHELPER" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
-fi
+error() {
+	# Log to stderr and exit with failure.
+	printf "%s\n" "$1" >&2
+	exit 1
+}
 
-# install base packs
-base=(sudo sed curl stow unzip)
-pkginstall root ${base[@]} || "Error: could not install UTILS packages."
-
-# create user
-adduser() {
-    read -p "Insert user name: " username
-    if id "$username" &>/dev/null; then
-        echo $username
+pkgcheck() {
+    if pacman -Qi $1 &> /dev/null; then
+        tput setaf 2
+        echo "The package "$1" is already installed"
+        tput sgr0
+        true
     else
-        adduser $username wheel || "Error: could not add user."
-        addsudo $username || "Error: could not add user to sudoers."
-        echo $username
+        tput setaf 1
+        echo "Package "$1" has NOT been installed"
+        tput sgr0
+        false
     fi
 }
-username=$( adduser ) || "Error!"
 
-# allow sudo without pass
-sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
+pkginstall() {
+    username=$1
+    shift
+    for item in "$@"; do
+	if ! pkgcheck $item; then
+	    # pacman installation
+	    if pacman -Ss $item &> /dev/null; then
+		tput setaf 3
+		echo "Installing package "$item" with pacman"
+		tput sgr0
+		pacman -S --noconfirm --needed $item
+	    # Aur helper installation
+	    elif pacman -Qi $AURHELPER &> /dev/null; then
+		tput setaf 3
+		echo "Installing package "$item" with "$AURHELPER""
+		tput sgr0
+		sudo -u "$username" $AURHELPER -S --noconfirm $item
+	    else
+		tput setaf 3
+		echo "Installing package "$item" from source"
+		tput 
+		rm -rf "/tmp/$item"
+		sudo -u "$username" mkdir -p "/tmp/$item"
+		sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "/tmp/$item" ||
+		{
+			cd "/tmp/$item" || return 1
+			sudo -u "$name" git pull --force origin master
+		}
+		cd "/tmp/$item" || exit 1
+		sudo -u "$username" -D "/tmp/$item" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+	    fi
+	fi
+    done
+}
 
-# create basic folders and get dotfiles
-sudo -u $username mkdir  /home/$username/docs  /home/$username/devs  /home/$username/repos  /home/$username/ws
-sudo -u $username git clone https://github.com/nash169/dotfiles.git /home/$username/devs/dotfiles
+basicutils() {
+    whiptail --title "Install Basics" --yesno "Install basic packages?" 8 78 || return
 
-# setup shell
-shell=(zsh)
-pkginstall $1 ${shell[@]} || "Error: could not install ZSH packages."
-cd /home/$1/devs/dotfiles && sudo -u $1 stow zsh -t /home/$1/
-chsh -s /bin/zsh "$1" >/dev/null 2>&1
+    pacman --noconfirm -Sy archlinux-keyring >/dev/null 2>&1
 
-# setup ssh
-ssh=(openssh)
-pkginstall $1 ${ssh[@]} || "Error: could not install SSH packages."
-read -p "Insert your email: " email
-sudo -u $1 ssh-keygen -t ed25519 -C "$email"
+    base=(sudo sed curl stow unzip git)
+    pkginstall root ${base[@]} || "Error: could not install BASIC packages."
+}
 
-# tiling window manager
-DWM="/home/bernardo/devs/st"
-git clone git@github.com:nash169/st-tmp.git $DWM 
-git -C $DWM remote add upstream git://git.suckless.org/dwm 
-git -C $DWM fetch upstream
-git -C $DWM merge upstream/master
-git -C $DWM checkout custom
-git -C $DWM rebase upstream/master
+adduser() {
+    whiptail --title "Add User" --yesno "Add new user?" 8 78 || return
 
-configuredesktop $username || "Error!"
+    NAME=$(whiptail --inputbox "Enter username" 8 78 --title "Add User" 3>&1 1>&2 2>&3) || return
+    while ! echo "$NAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
+	NAME=$(whiptail --inputbox "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _." 8 78 --title "Add User" 3>&1 1>&2 2>&3 3>&1) || return
+    done
 
-# terminal
-ST="/home/bernardo/devs/st"
-git clone git@github.com:nash169/st-tmp.git $ST 
-git -C $ST remote add upstream git://git.suckless.org/st 
-git -C $ST fetch upstream
-git -C $ST merge upstream/master
-git -C $ST checkout custom
-git -C $ST rebase upstream/master
+    if id -u "$NAME" >/dev/null 2>&1; then 
+	whiptail --title "Warning" --msgbox "The user already exist." 8 78
+	return
+    fi
 
-terminal=(tmux exa bat)
-pkginstall $1 ${terminal[@]} || "Error: could not install TERMINAL packages."
+    PASS=$(whiptail --passwordbox "Enter password" 8 78 --title "Add User" 3>&1 1>&2 2>&3) || return
 
-configureterminal $username || "Error!"
+    useradd -m -g wheel -s /bin/zsh "$NAME" >/dev/null 2>&1 || usermod -a -G wheel "$NAME" && mkdir -p /home/"$NAME" && chown "$NAME":wheel /home/"$NAME"
+    echo "$NAME:$PASS" | chpasswd
+    unset PASS 
+}
 
+username() {
+    if [ -z $NAME ]; then
+	echo NAME=$(whiptail --inputbox "Enter the username." 8 78 3>&1 1>&2 2>&3) || return
+    fi
+}
 
-tex=(
-    texlive-bin
-    texlive-fontsrecomended
-    texlive-latexextra
-    texlive-latexrecomended
-    texlive-latex
-    texlive-basic
-    texlive-xetex
-    texlive-mathscience
-    texlive-fontsextra
-    texlive-langenglish
-    texlive-context
-    texlive-luatex
-    texlive-plaingeneric
-    texlive-binextra
-    texlive-bibtexextra
-    texlive-pictures
-    texlive-langfrench
-    texlive-langgerman
-    texlive-fontutils
-    )
+userrepo() {
+    username() || error "Could not get username."
 
-if [$(awk -F= '$1=="NAME" { print $2 ;}' /etc/os-release | tr -d '"') == "Arch"]; then
-    sudo pacman -S lazygit
-elif [$(awk -F= '$1=="NAME" { print $2 ;}' /etc/os-release | tr -d '"') == "Ubuntu"]; then
-    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-    tar xf lazygit.tar.gz lazygit
-    sudo install lazygit /usr/local/bin
-fi
+    if [ -z $REPODIR ]; then
+	echo REPODIR=/home/$NAME/$(whiptail --inputbox "Enter repository directory." 8 78 3>&1 1>&2 2>&3) || return
+    fi
 
-# # EDITOR
-# source /root/linux-config/scripts/modules/editor.sh $1 $username
+    if [ ! -d $REPODIR ]; then
+	sudo -u $NAME mkdir -p $REPODIR
+    fi
+}
 
-# # DEVELOP
-# source /root/linux-config/scripts/modules/develop.sh $1 $username
+aurhelper() {
+    whiptail --title "Install the AUR helper?" --yesno "AUR helper" 8 78 || return
 
-# # EXPLORER
-# source /root/linux-config/scripts/modules/explorer.sh $1 $username
+    username() || error "Could not get username."
 
-# # BROWSER
-# source /root/linux-config/scripts/modules/browser.sh $1 $username
-
-# # MULTIMEDIA
-# source /root/linux-config/scripts/modules/media.sh $1 $username
-
-# # READER
-# source /root/linux-config/scripts/modules/reader.sh $1 $username
-
-# # EMAIL
-# source /root/linux-config/scripts/modules/email.sh $1 $username
-
-# # SOUND
-# source /root/linux-config/scripts/modules/sound.sh $1 $username
-
-# # BLUETOOTH
-# source /root/linux-config/scripts/modules/bluetooth.sh $1 $username
-
-# # DOWNLOAD
-# source /root/linux-config/scripts/modules/download.sh $1 $username
-
-#
-sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
-
-# #  Node support
-# pkginstall nodejs npm
-# sudo npm install -g neovim
-
-# # Python support
-# pkginstall python-pip
-# pip install pynvim --user
-
-# pkginstall ripgrep fzf lf
-
-# # Allow to draw image in terminal
-# pkginstall python-ueberzug-git
-
-# # Don't know yet
-# pkginstall neovim-remote
-#  install -g tree-sitter-cli
-
-# install tiling window manager
-# DWM="/home/bernardo/devs/dwm"
-# git clone git@github.com:nash169/dwm-tmp.git $DWM 
-# git -C $DWM remote add upstream git://git.suckless.org/dwm 
-# git -C $DWM fetch upstream
-# git -C $DWM merge upstream/master
+    pkginstall $NAME $AURHELPER
+}
 
 
+dotfiles() {
+    whiptail --title "Install Dofiles?" --yesno "Dotfiles" 8 78 || return
+    userrepo() || error "Could not get repository directory."
+    
+    # fetch dotfiles if not present in the repository directory
+    if [ ! -d "$REPODIR/dotfiles" ]; then
+	sudo -u $NAME git clone https://github.com/nash169/dotfiles.git $REPODIR/dotfiles
+    fi
+
+    # check if .config folder is present to stow dotfiles later
+    if [ ! -d "/home/$NAME/.config" ]; then
+	sudo -u $NAME mkdir -p /home/$NAME/.config
+    fi
+}
+
+desktop() {
+    whiptail --title "Install Desktop?" --yesno "Desktop" 8 78 || return
+    dotfiles() || error "Could not fetch the dotfiles."
+
+    desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu)
+    pkginstall $NAME ${desktop[@]} || "Error: could not install XORG packages."
+
+    sudo -u $NAME git clone https://github.com/nash169/dwm.git $REPODIR/dwm 
+    sudo -u $NAME git -C $REPODIR/dwm remote add upstream git://git.suckless.org/dwm 
+    sudo -u $NAME git -C $REPODIR/dwm fetch upstream
+    sudo -u $NAME git -C $REPODIR/dwm merge upstream/master
+    sudo -u $NAME git -C $REPODIR/dwm checkout custom
+    sudo -u $NAME git -C $REPODIR/dwm rebase upstream/master
+    
+    if [ ! -d "$REPODIR/dotfiles" ]; then
+	sudo -u stow -d $REPODIR/dotfiles -S font -t /home/$NAME 
+	sudo -u stow -d $REPODIR/dotfiles -S walls -t /home/$NAME 
+	sudo -u stow -d $REPODIR/dotfiles -S xserver -t /home/$NAME 
+	sudo -u stow -d $REPODIR/dotfiles -S dwm -t $REPODIR/dwm 
+    fi
+
+    cd $REPODIR/dwm && sudo -u $NAME make install
+}
+
+terminal() {
+    whiptail --title "Install Terminal?" --yesno "Terminal" 8 78 || return
+    dotfiles() || error "Could not fetch the dotfiles."
+
+    sudo -u $NAME git clone git@github.com:nash169/st.git $REPODIR/st 
+    sudo -u $NAME git -C $REPODIR/st remote add upstream git://git.suckless.org/st 
+    sudo -u $NAME git -C $REPODIR/st fetch upstream
+    sudo -u $NAME git -C $REPODIR/st merge upstream/master
+    sudo -u $NAME git -C $REPODIR/st checkout custom
+    sudo -u $NAME git -C $REPODIR/st rebase upstream/master
+
+    if [ ! -d "$REPODIR/dotfiles" ]; then
+	sudo -u stow -d $REPODIR/dotfiles -S font -t /home/$NAME 
+	sudo -u stow -d $REPODIR/dotfiles -S st -t $REPODIR/st 
+    fi
+
+    cd $REPODIR/st && sudo -u $NAME make install
+}
+
+shell() {
+    whiptail --title "Install Shell?" --yesno "Shell" 8 78 || return
+    dotfiles() || error "Could not fetch the dotfiles."
+
+    shell=(tmux exa bat zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
+    pkginstall $NAME ${shell[@]} || "Error: could not install SHELL packages."
+    chsh -s /bin/zsh "$NAME" >/dev/null 2>&1
+
+    if [ ! -d "$REPODIR/dotfiles" ]; then
+	sudo -u $NAME stow -d $REPODIR/dotfiles -S zsh -t /home/$NAME
+    fi
+}
+
+explorer() {
+    whiptail --title "Install Explorer?" --yesno "Explorer" 8 78 || return
+    dotfiles() || error "Could not fetch the dotfiles."
+
+    explorer=(ripgrep fzf lf-git ueberzug)
+    pkginstall $1 ${explorer[@]} || "Error: could not install EXPLORER packages."
+
+    if [ ! -d "$REPODIR/dotfiles" ]; then
+	sudo -u $NAME stow -d $REPODIR/dotfiles -S lf -t /home/$NAME
+    fi
+}
+
+editor() {
+    whiptail --title "Install Editor?" --yesno "Editor" 8 78 || return
+    dotfiles() || error "Could not fetch the dotfiles."
+
+    editor=(neovim python-pynvim texlive-bin texlive-fontsrecomended texlive-latexextra texlive-latexrecomended texlive-latex texlive-basic texlive-xetex texlive-mathscience texlive-fontsextra texlive-langenglish texlive-context texlive-luatex texlive-plaingeneric texlive-binextra texlive-bibtexextra texlive-pictures texlive-langfrench texlive-langgerman texlive-fontutils) # ninja tree-sitter lua luarocks
+    pkginstall $1 ${editor[@]} || "Error: could not install EDITOR packages."
+
+    if [ ! -d "$REPODIR/dotfiles" ]; then
+	sudo -u $NAME stow -d $REPODIR/dotfiles -S nvim -t /home/$NAME
+    fi
+}
+
+email() {
+    email=(mutt-wizard-git)
+    pkginstall $1 ${email[@]} || "Error: could not install EMAIL packages."
+}
+
+mediasuite() {
+    multimedia=(sxiv mpd mpc mpv)
+    pkginstall $1 ${multimedia[@]} || "Error: could not install MULTIMEDIA packages."
+
+    reader=(zathura zathura-pdf-mupdf zotero)
+    pkginstall $1 ${reader[@]} || "Error: could not install READER packages."
+}
+
+download() {
+    whiptail --title "Install Download Tools?" --yesno "Download" 8 78 || return
+    dotfiles() || error "Could not fetch the dotfiles."
+
+    download=(rtorrent youtube-dl)
+    pkginstall $1 ${download[@]} || "Error: could not install DOWNLOAD packages."
+}
+
+bluetooth() {
+    bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
+    pkginstall $1 ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."
+    systemctl enable bluetooth.service
+    systemctl start bluetooth.service
+    sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
+}
+
+audio() {
+    audio=(wireplumber pipewire-pulse pulsemixer)
+    pkginstall $1 ${audio[@]} || "Error: could not install AUDIO packages."
+}
+
+browser() {
+    browser=(firefox)
+    pkginstall $1 ${browser[@]} || "Error: could not install BROWSER packages."
+}
+
+devtools() {
+    develop=(cmake eigen clang)
+    pkginstall $1 ${develop[@]} || "Error: could not install DEVELOP packages."
+    cd /home/$1/developments/linux-config/configs && sudo -u $1 stow format -t /home/$1/
+}
+
+sshclient() {
+    cd /home/$1/developments/linux-config/configs && sudo -u $1 stow ssh -t /home/$1/
+    ssh=(openssh keychain)
+    pkginstall $1 ${ssh[@]} || "Error: could not install SSH packages."
+    read -p "Insert your email: " email
+    sudo -u $1 ssh-keygen -t ed25519 -C "$email"
+    sudo -u $1 git config --global user.email "$email"
+}

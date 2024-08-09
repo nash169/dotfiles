@@ -3,8 +3,9 @@ return {
     version = "*",
     config = function()
         require("toggleterm").setup({
-            open_mapping = [[<A-t>]],
+            open_mapping = [[<leader>tt]],
             direction = "float",
+            insert_mappings = false, -- whether or not the open mapping applies in insert mode
         })
 
         local Terminal = require("toggleterm.terminal").Terminal
@@ -16,6 +17,6 @@ return {
             lazygit:toggle()
         end
 
-        vim.keymap.set("n", "<A-g>", _LAZYGIT_TOGGLE, { noremap = true })
+        vim.keymap.set("n", "<leader>gg", _LAZYGIT_TOGGLE, { noremap = true })
     end,
 }

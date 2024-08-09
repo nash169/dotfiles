@@ -401,4 +401,4 @@ zsh/.config/zsh/plugins/
 
 lazy-lock.json
 font/.local/share/fonts/.uuid
-
+ignored_dots/
