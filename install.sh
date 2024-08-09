@@ -5,7 +5,7 @@ AURHELPER=yay
 
 error() {
     printf "%s\n" "$1" >&2
-    exit 1
+    return
 }
 
 pkgcheck() {
@@ -29,32 +29,40 @@ pkginstall() {
 	if ! pkgcheck $item; then
 	    # pacman installation
 	    if pacman -Ss $item &> /dev/null; then
-		tput setaf 3
-		echo "Installing package "$item" with pacman"
-		tput sgr0
-		pacman -S --noconfirm --needed $item
+            tput setaf 3
+            echo "Installing package "$item" with pacman"
+            tput sgr0
+            pacman -S --noconfirm --needed $item
 	    # Aur helper installation
 	    elif pacman -Qi $AURHELPER &> /dev/null; then
-		tput setaf 3
-		echo "Installing package "$item" with "$AURHELPER""
-		tput sgr0
-		sudo -u "$username" $AURHELPER -S --noconfirm $item
+            tput setaf 3
+            echo "Installing package "$item" with "$AURHELPER""
+            tput sgr0
+            sudo -u "$username" $AURHELPER -S --noconfirm $item
 	    else
-		tput setaf 3
-		echo "Installing package "$item" from source"
-		tput 
-		rm -rf "/tmp/$item"
-		sudo -u "$username" mkdir -p "/tmp/$item"
-		sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "/tmp/$item" ||
-			{
-			    cd "/tmp/$item" || return 1
-			    sudo -u "$username" git pull --force origin master
-			}
-		cd "/tmp/$item" || exit 1
-		sudo -u "$username" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+            tput setaf 3
+            echo "Installing package "$item" from source"
+            tput 
+            rm -rf "/tmp/$item"
+            sudo -u "$username" mkdir -p "/tmp/$item"
+            sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "/tmp/$item" ||
+                {
+                    cd "/tmp/$item" || return 1
+                    sudo -u "$username" git pull --force origin master
+                }
+            cd "/tmp/$item" || exit 1
+            sudo -u "$username" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
 	    fi
 	fi
     done
+}
+
+sudooff() {
+    sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
+}
+
+sudoon() {
+    sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
 }
 
 basicutils() {
@@ -89,7 +97,7 @@ adduser() {
 }
 
 username() {
-    if [ -z ${NAME+x}]; then
+    if [ -z ${NAME+x} ]; then
 	NAME=$(whiptail --inputbox "Enter the username." 8 78 3>&1 1>&2 2>&3) || return
     fi
 }
@@ -97,9 +105,11 @@ username() {
 userrepo() {
     username || error "Could not get username."
     if [ -z "$REPODIR" ]; then
-	REPODIR=/home/$NAME/$(whiptail --inputbox "Enter repository directory." 8 78 3>&1 1>&2 2>&3) || return
+	    REPODIR=/home/$NAME/$(whiptail --inputbox "Enter repository directory." 8 78 3>&1 1>&2 2>&3) || return
     fi
-    [ ! -d "$REPODIR" ] && mkdir -p "$REPODIR"
+    if [ ! -d "$REPODIR" ]; then
+        sudo -u "$NAME" mkdir -p "$REPODIR"
+    fi
 }
 
 aurhelper() {
@@ -112,22 +122,21 @@ aurhelper() {
 
 
 dotfiles() {
-    whiptail --title "Install Dofiles?" --yesno "Dotfiles" 8 78 || return
     userrepo || error "Could not get repository directory."
-    
-    # fetch dotfiles if not present in the repository directory
-    if [ ! -d "$REPODIR/dotfiles" ]; then
-	sudo -u "$NAME" git clone https://github.com/nash169/dotfiles.git "$REPODIR/dotfiles"
-    fi
 
-    # check if .config folder is present to stow dotfiles later
-    if [ ! -d "/home/$NAME/.config" ]; then
-	sudo -u "$NAME" mkdir -p "/home/$NAME/.config"
+    if [ ! -d "$REPODIR/dotfiles" ]; then
+        whiptail --title "Dotfiles" --yesno "Install Dofiles?" 8 78 || return
+
+        sudo -u "$NAME" git clone https://github.com/nash169/dotfiles.git "$REPODIR/dotfiles"
+
+        if [ ! -d "/home/$NAME/.config" ]; then
+	        sudo -u "$NAME" mkdir -p "/home/$NAME/.config"
+        fi
     fi
 }
 
 desktop() {
-    whiptail --title "Install Desktop?" --yesno "Desktop" 8 78 || return
+    whiptail --title "Desktop" --yesno "Install Desktop?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
     desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu)
@@ -135,94 +144,95 @@ desktop() {
 
     sudo -u $NAME git clone https://github.com/nash169/dwm.git $REPODIR/dwm 
     sudo -u $NAME git -C $REPODIR/dwm remote add upstream git://git.suckless.org/dwm 
-    sudo -u $NAME git -C $REPODIR/dwm fetch upstream
-    sudo -u $NAME git -C $REPODIR/dwm merge upstream/master
+    # sudo -u $NAME git -C $REPODIR/dwm fetch upstream
+    # sudo -u $NAME git -C $REPODIR/dwm merge upstream/master
     sudo -u $NAME git -C $REPODIR/dwm checkout custom
-    sudo -u $NAME git -C $REPODIR/dwm rebase upstream/master
+    # sudo -u $NAME git -C $REPODIR/dwm rebase upstream/master
     
-    if [ ! -d "$REPODIR/dotfiles" ]; then
-	sudo -u stow -d $REPODIR/dotfiles -S font -t /home/$NAME 
-	sudo -u stow -d $REPODIR/dotfiles -S walls -t /home/$NAME 
-	sudo -u stow -d $REPODIR/dotfiles -S xserver -t /home/$NAME 
-	sudo -u stow -d $REPODIR/dotfiles -S dwm -t $REPODIR/dwm 
+    if [ -d "$REPODIR/dotfiles" ]; then
+        cd $REPODIR/dotfiles && sudo -u $NAME stow font -t /home/$NAME 
+        cd $REPODIR/dotfiles && sudo -u $NAME stow walls -t /home/$NAME 
+        cd $REPODIR/dotfiles && sudo -u $NAME stow xserver -t /home/$NAME 
+        cd $REPODIR/dotfiles && sudo -u $NAME stow dwm -t $REPODIR/dwm 
     fi
 
-    cd $REPODIR/dwm && sudo -u $NAME make install
+    cd $REPODIR/dwm && make install
 
-    sudo -u $NAME git clone https://github.com/nash169/dwmstatus.git $REPODIR/dwmstaus 
+    sudo -u $NAME git clone https://github.com/nash169/dwmstatus.git $REPODIR/dwmstatus 
     sudo -u $NAME git -C $REPODIR/dwmstatus remote add upstream git://git.suckless.org/dwmstatus 
-    sudo -u $NAME git -C $REPODIR/dwmstatus fetch upstream
-    sudo -u $NAME git -C $REPODIR/dwmstatus rebase upstream/master
-    cd $REPODIR/dwmstatus && sudo -u $NAME make install
+    # sudo -u $NAME git -C $REPODIR/dwmstatus fetch upstream
+    # sudo -u $NAME git -C $REPODIR/dwmstatus rebase upstream/master
+    cd $REPODIR/dwmstatus && make install
 }
 
 terminal() {
-    whiptail --title "Install Terminal?" --yesno "Terminal" 8 78 || return
+    whiptail --title "Terminal" --yesno "Install Terminal?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
-    sudo -u $NAME git clone git@github.com:nash169/st.git $REPODIR/st 
+    sudo -u $NAME git clone https://github.com/nash169/st.git $REPODIR/st 
     sudo -u $NAME git -C $REPODIR/st remote add upstream git://git.suckless.org/st 
-    sudo -u $NAME git -C $REPODIR/st fetch upstream
-    sudo -u $NAME git -C $REPODIR/st merge upstream/master
+    # sudo -u $NAME git -C $REPODIR/st fetch upstream
+    # sudo -u $NAME git -C $REPODIR/st merge upstream/master
     sudo -u $NAME git -C $REPODIR/st checkout custom
-    sudo -u $NAME git -C $REPODIR/st rebase upstream/master
+    # sudo -u $NAME git -C $REPODIR/st rebase upstream/master
 
-    if [ ! -d "$REPODIR/dotfiles" ]; then
-	sudo -u stow -d $REPODIR/dotfiles -S font -t /home/$NAME 
-	sudo -u stow -d $REPODIR/dotfiles -S st -t $REPODIR/st 
+    if [ -d "$REPODIR/dotfiles" ]; then
+        cd $REPODIR/dotfiles && sudo -u stow font -t /home/$NAME 
+        cd $REPODIR/dotfiles && sudo -u stow st -t $REPODIR/st 
     fi
 
-    cd $REPODIR/st && sudo -u $NAME make install
+    cd $REPODIR/st && make install
 }
 
 shell() {
-    whiptail --title "Install Shell?" --yesno "Shell" 8 78 || return
+    whiptail --title "Shell" --yesno "Install Shell?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
     shell=(tmux exa bat zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
     pkginstall $NAME ${shell[@]} || "Error: could not install SHELL packages."
     chsh -s /bin/zsh "$NAME" >/dev/null 2>&1
 
-    if [ ! -d "$REPODIR/dotfiles" ]; then
-	sudo -u $NAME stow -d $REPODIR/dotfiles -S zsh -t /home/$NAME
+    if [ -d "$REPODIR/dotfiles" ]; then
+	    cd $REPODIR/dotfiles && sudo -u $NAME stow zsh -t /home/$NAME
     fi
 }
 
 explorer() {
-    whiptail --title "Install Explorer?" --yesno "Explorer" 8 78 || return
+    whiptail --title "Explorer" --yesno "Install Explorer?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
     explorer=(ripgrep fzf lf-git ueberzug)
-    pkginstall $1 ${explorer[@]} || "Error: could not install EXPLORER packages."
+    pkginstall $NAME ${explorer[@]} || "Error: could not install EXPLORER packages."
 
-    if [ ! -d "$REPODIR/dotfiles" ]; then
-	sudo -u $NAME stow -d $REPODIR/dotfiles -S lf -t /home/$NAME
+    if [ -d "$REPODIR/dotfiles" ]; then
+	    cd $REPODIR/dotfiles && sudo -u $NAME stow lf -t /home/$NAME
     fi
 }
 
 editor() {
-    whiptail --title "Install Editor?" --yesno "Editor" 8 78 || return
+    whiptail --title "Editor" --yesno "Install Editor?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
     editor=(neovim python-pynvim texlive-bin texlive-fontsrecomended texlive-latexextra texlive-latexrecomended texlive-latex texlive-basic texlive-xetex texlive-mathscience texlive-fontsextra texlive-langenglish texlive-context texlive-luatex texlive-plaingeneric texlive-binextra texlive-bibtexextra texlive-pictures texlive-langfrench texlive-langgerman texlive-fontutils) # ninja tree-sitter lua luarocks
-    pkginstall $1 ${editor[@]} || "Error: could not install EDITOR packages."
+    pkginstall $NAME ${editor[@]} || "Error: could not install EDITOR packages."
 
     if [ ! -d "$REPODIR/dotfiles" ]; then
-	sudo -u $NAME stow -d $REPODIR/dotfiles -S nvim -t /home/$NAME
+	    cd $REPODIR/dotfiles && sudo -u $NAME stow nvim -t /home/$NAME
+        cd $REPODIR/dotfiles && sudo -u $NAME stow format -t /home/$NAME
     fi
 }
 
 email() {
     email=(mutt-wizard-git)
-    pkginstall $1 ${email[@]} || "Error: could not install EMAIL packages."
+    pkginstall $NAME ${email[@]} || "Error: could not install EMAIL packages."
 }
 
 mediasuite() {
     multimedia=(sxiv mpd mpc mpv)
-    pkginstall $1 ${multimedia[@]} || "Error: could not install MULTIMEDIA packages."
+    pkginstall $NAME ${multimedia[@]} || "Error: could not install MULTIMEDIA packages."
 
     reader=(zathura zathura-pdf-mupdf zotero)
-    pkginstall $1 ${reader[@]} || "Error: could not install READER packages."
+    pkginstall $NAME ${reader[@]} || "Error: could not install READER packages."
 }
 
 download() {
@@ -230,12 +240,12 @@ download() {
     dotfiles || error "Could not fetch the dotfiles."
 
     download=(rtorrent youtube-dl)
-    pkginstall $1 ${download[@]} || "Error: could not install DOWNLOAD packages."
+    pkginstall $NAME ${download[@]} || "Error: could not install DOWNLOAD packages."
 }
 
 bluetooth() {
     bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
-    pkginstall $1 ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."
+    pkginstall $NAME ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."
     systemctl enable bluetooth.service
     systemctl start bluetooth.service
     sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
@@ -243,28 +253,26 @@ bluetooth() {
 
 audio() {
     audio=(wireplumber pipewire-pulse pulsemixer)
-    pkginstall $1 ${audio[@]} || "Error: could not install AUDIO packages."
+    pkginstall $NAME ${audio[@]} || "Error: could not install AUDIO packages."
 }
 
 browser() {
     browser=(firefox)
-    pkginstall $1 ${browser[@]} || "Error: could not install BROWSER packages."
+    pkginstall $NAME ${browser[@]} || "Error: could not install BROWSER packages."
 }
 
 devtools() {
     develop=(cmake eigen clang)
-    pkginstall $1 ${develop[@]} || "Error: could not install DEVELOP packages."
-    cd /home/$1/developments/linux-config/configs && sudo -u $1 stow format -t /home/$1/
+    pkginstall $NAME ${develop[@]} || "Error: could not install DEVELOP packages."
 }
 
 sshclient() {
-    cd /home/$1/developments/linux-config/configs && sudo -u $1 stow ssh -t /home/$1/
     ssh=(openssh keychain)
-    pkginstall $1 ${ssh[@]} || "Error: could not install SSH packages."
+    pkginstall $NAME ${ssh[@]} || "Error: could not install SSH packages."
     read -p "Insert your email: " email
-    sudo -u $1 ssh-keygen -t ed25519 -C "$email"
-    sudo -u $1 git config --global user.email "$email"
+    sudo -u $NAME ssh-keygen -t ed25519 -C "$email"
+    sudo -u $NAME git config --global user.email "$email"
 }
 
 # sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
-# sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
+# 
