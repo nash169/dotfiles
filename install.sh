@@ -4,9 +4,8 @@ DISTRO=$(awk '/DISTRIB_ID=/' /etc/*-release | sed 's/DISTRIB_ID=//' | tr '[:uppe
 AURHELPER=yay
 
 error() {
-	# Log to stderr and exit with failure.
-	printf "%s\n" "$1" >&2
-	exit 1
+    printf "%s\n" "$1" >&2
+    exit 1
 }
 
 pkgcheck() {
@@ -47,23 +46,25 @@ pkginstall() {
 		rm -rf "/tmp/$item"
 		sudo -u "$username" mkdir -p "/tmp/$item"
 		sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "/tmp/$item" ||
-		{
-			cd "/tmp/$item" || return 1
-			sudo -u "$name" git pull --force origin master
-		}
+			{
+			    cd "/tmp/$item" || return 1
+			    sudo -u "$username" git pull --force origin master
+			}
 		cd "/tmp/$item" || exit 1
-		sudo -u "$username" -D "/tmp/$item" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+		sudo -u "$username" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
 	    fi
 	fi
     done
 }
 
 basicutils() {
+    pacman --noconfirm --needed -Sy libnewt
+	
     whiptail --title "Install Basics" --yesno "Install basic packages?" 8 78 || return
 
     pacman --noconfirm -Sy archlinux-keyring >/dev/null 2>&1
 
-    base=(sudo sed curl stow unzip git)
+    base=(base base-devel sudo sed curl stow unzip git)
     pkginstall root ${base[@]} || "Error: could not install BASIC packages."
 }
 
@@ -88,50 +89,46 @@ adduser() {
 }
 
 username() {
-    if [ -z $NAME ]; then
-	echo NAME=$(whiptail --inputbox "Enter the username." 8 78 3>&1 1>&2 2>&3) || return
+    if [ -z ${NAME+x}]; then
+	NAME=$(whiptail --inputbox "Enter the username." 8 78 3>&1 1>&2 2>&3) || return
     fi
 }
 
 userrepo() {
-    username() || error "Could not get username."
-
-    if [ -z $REPODIR ]; then
-	echo REPODIR=/home/$NAME/$(whiptail --inputbox "Enter repository directory." 8 78 3>&1 1>&2 2>&3) || return
+    username || error "Could not get username."
+    if [ -z "$REPODIR" ]; then
+	REPODIR=/home/$NAME/$(whiptail --inputbox "Enter repository directory." 8 78 3>&1 1>&2 2>&3) || return
     fi
-
-    if [ ! -d $REPODIR ]; then
-	sudo -u $NAME mkdir -p $REPODIR
-    fi
+    [ ! -d "$REPODIR" ] && mkdir -p "$REPODIR"
 }
 
 aurhelper() {
     whiptail --title "Install the AUR helper?" --yesno "AUR helper" 8 78 || return
 
-    username() || error "Could not get username."
+    username || error "Could not get username."
 
-    pkginstall $NAME $AURHELPER
+    pkginstall "$NAME" "$AURHELPER"
 }
 
 
 dotfiles() {
     whiptail --title "Install Dofiles?" --yesno "Dotfiles" 8 78 || return
-    userrepo() || error "Could not get repository directory."
+    userrepo || error "Could not get repository directory."
     
     # fetch dotfiles if not present in the repository directory
     if [ ! -d "$REPODIR/dotfiles" ]; then
-	sudo -u $NAME git clone https://github.com/nash169/dotfiles.git $REPODIR/dotfiles
+	sudo -u "$NAME" git clone https://github.com/nash169/dotfiles.git "$REPODIR/dotfiles"
     fi
 
     # check if .config folder is present to stow dotfiles later
     if [ ! -d "/home/$NAME/.config" ]; then
-	sudo -u $NAME mkdir -p /home/$NAME/.config
+	sudo -u "$NAME" mkdir -p "/home/$NAME/.config"
     fi
 }
 
 desktop() {
     whiptail --title "Install Desktop?" --yesno "Desktop" 8 78 || return
-    dotfiles() || error "Could not fetch the dotfiles."
+    dotfiles || error "Could not fetch the dotfiles."
 
     desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu)
     pkginstall $NAME ${desktop[@]} || "Error: could not install XORG packages."
@@ -151,11 +148,17 @@ desktop() {
     fi
 
     cd $REPODIR/dwm && sudo -u $NAME make install
+
+    sudo -u $NAME git clone https://github.com/nash169/dwmstatus.git $REPODIR/dwmstaus 
+    sudo -u $NAME git -C $REPODIR/dwmstatus remote add upstream git://git.suckless.org/dwmstatus 
+    sudo -u $NAME git -C $REPODIR/dwmstatus fetch upstream
+    sudo -u $NAME git -C $REPODIR/dwmstatus rebase upstream/master
+    cd $REPODIR/dwmstatus && sudo -u $NAME make install
 }
 
 terminal() {
     whiptail --title "Install Terminal?" --yesno "Terminal" 8 78 || return
-    dotfiles() || error "Could not fetch the dotfiles."
+    dotfiles || error "Could not fetch the dotfiles."
 
     sudo -u $NAME git clone git@github.com:nash169/st.git $REPODIR/st 
     sudo -u $NAME git -C $REPODIR/st remote add upstream git://git.suckless.org/st 
@@ -174,7 +177,7 @@ terminal() {
 
 shell() {
     whiptail --title "Install Shell?" --yesno "Shell" 8 78 || return
-    dotfiles() || error "Could not fetch the dotfiles."
+    dotfiles || error "Could not fetch the dotfiles."
 
     shell=(tmux exa bat zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
     pkginstall $NAME ${shell[@]} || "Error: could not install SHELL packages."
@@ -187,7 +190,7 @@ shell() {
 
 explorer() {
     whiptail --title "Install Explorer?" --yesno "Explorer" 8 78 || return
-    dotfiles() || error "Could not fetch the dotfiles."
+    dotfiles || error "Could not fetch the dotfiles."
 
     explorer=(ripgrep fzf lf-git ueberzug)
     pkginstall $1 ${explorer[@]} || "Error: could not install EXPLORER packages."
@@ -199,7 +202,7 @@ explorer() {
 
 editor() {
     whiptail --title "Install Editor?" --yesno "Editor" 8 78 || return
-    dotfiles() || error "Could not fetch the dotfiles."
+    dotfiles || error "Could not fetch the dotfiles."
 
     editor=(neovim python-pynvim texlive-bin texlive-fontsrecomended texlive-latexextra texlive-latexrecomended texlive-latex texlive-basic texlive-xetex texlive-mathscience texlive-fontsextra texlive-langenglish texlive-context texlive-luatex texlive-plaingeneric texlive-binextra texlive-bibtexextra texlive-pictures texlive-langfrench texlive-langgerman texlive-fontutils) # ninja tree-sitter lua luarocks
     pkginstall $1 ${editor[@]} || "Error: could not install EDITOR packages."
@@ -224,7 +227,7 @@ mediasuite() {
 
 download() {
     whiptail --title "Install Download Tools?" --yesno "Download" 8 78 || return
-    dotfiles() || error "Could not fetch the dotfiles."
+    dotfiles || error "Could not fetch the dotfiles."
 
     download=(rtorrent youtube-dl)
     pkginstall $1 ${download[@]} || "Error: could not install DOWNLOAD packages."
@@ -262,3 +265,6 @@ sshclient() {
     sudo -u $1 ssh-keygen -t ed25519 -C "$email"
     sudo -u $1 git config --global user.email "$email"
 }
+
+# sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
+# sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
