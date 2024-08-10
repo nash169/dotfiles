@@ -105,7 +105,7 @@ username() {
 userrepo() {
     username || error "Could not get username."
     if [ -z "$REPODIR" ]; then
-	    REPODIR=/home/$NAME/$(whiptail --inputbox "Enter repository directory." 8 78 3>&1 1>&2 2>&3) || return
+	REPODIR=/home/$NAME/$(whiptail --inputbox "Enter repository directory." 8 78 3>&1 1>&2 2>&3) || return
     fi
     if [ ! -d "$REPODIR" ]; then
         sudo -u "$NAME" mkdir -p "$REPODIR"
