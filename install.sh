@@ -22,6 +22,20 @@ pkgcheck() {
     fi
 }
 
+manualinstall() {
+    sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
+    rm -rf "/tmp/$2"
+    sudo -u "$1" mkdir -p "/tmp/$2"
+    sudo -u "$1" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$2.git" "/tmp/$2" ||
+        {
+            cd "/tmp/$2" || return 1
+            sudo -u "$1" git pull --force origin master
+        }
+    cd "/tmp/$2" || exit 1
+    sudo -u "$1" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+    sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
+}
+
 pkginstall() {
     username=$1
     shift
@@ -35,34 +49,21 @@ pkginstall() {
             pacman -S --noconfirm --needed $item
 	    # Aur helper installation
 	    elif pacman -Qi $AURHELPER &> /dev/null; then
+            sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
             tput setaf 3
             echo "Installing package "$item" with "$AURHELPER""
             tput sgr0
             sudo -u "$username" $AURHELPER -S --noconfirm $item
+            sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
 	    else
+            sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
             tput setaf 3
             echo "Installing package "$item" from source"
             tput 
-            rm -rf "/tmp/$item"
-            sudo -u "$username" mkdir -p "/tmp/$item"
-            sudo -u "$username" git -C "/tmp" clone --depth 1 --single-branch --no-tags -q "https://aur.archlinux.org/$item.git" "/tmp/$item" ||
-                {
-                    cd "/tmp/$item" || return 1
-                    sudo -u "$username" git pull --force origin master
-                }
-            cd "/tmp/$item" || exit 1
-            sudo -u "$username" makepkg --noconfirm -si >/dev/null 2>&1 || return 1
+            manualinstall $username $item
 	    fi
 	fi
     done
-}
-
-sudooff() {
-    sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
-}
-
-sudoon() {
-    sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
 }
 
 basicutils() {
@@ -117,7 +118,7 @@ aurhelper() {
 
     username || error "Could not get username."
 
-    pkginstall "$NAME" "$AURHELPER"
+    manualinstall "$NAME" "$AURHELPER"
 }
 
 
@@ -140,7 +141,7 @@ desktop() {
     dotfiles || error "Could not fetch the dotfiles."
 
     desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu)
-    pkginstall $NAME ${desktop[@]} || "Error: could not install XORG packages."
+    pkginstall $NAME ${desktop[@]} || error "Could not install XORG packages."
 
     sudo -u $NAME git clone https://github.com/nash169/dwm.git $REPODIR/dwm 
     sudo -u $NAME git -C $REPODIR/dwm remote add upstream git://git.suckless.org/dwm 
@@ -189,7 +190,7 @@ shell() {
     dotfiles || error "Could not fetch the dotfiles."
 
     shell=(tmux exa bat zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
-    pkginstall $NAME ${shell[@]} || "Error: could not install SHELL packages."
+    pkginstall $NAME ${shell[@]} || error "Could not install SHELL packages."
     chsh -s /bin/zsh "$NAME" >/dev/null 2>&1
 
     if [ -d "$REPODIR/dotfiles" ]; then
@@ -202,7 +203,7 @@ explorer() {
     dotfiles || error "Could not fetch the dotfiles."
 
     explorer=(ripgrep fzf lf-git ueberzug)
-    pkginstall $NAME ${explorer[@]} || "Error: could not install EXPLORER packages."
+    pkginstall $NAME ${explorer[@]} || error "Could not install EXPLORER packages."
 
     if [ -d "$REPODIR/dotfiles" ]; then
 	    cd $REPODIR/dotfiles && sudo -u $NAME stow lf -t /home/$NAME
@@ -214,7 +215,7 @@ editor() {
     dotfiles || error "Could not fetch the dotfiles."
 
     editor=(neovim python-pynvim texlive-bin texlive-fontsrecomended texlive-latexextra texlive-latexrecomended texlive-latex texlive-basic texlive-xetex texlive-mathscience texlive-fontsextra texlive-langenglish texlive-context texlive-luatex texlive-plaingeneric texlive-binextra texlive-bibtexextra texlive-pictures texlive-langfrench texlive-langgerman texlive-fontutils) # ninja tree-sitter lua luarocks
-    pkginstall $NAME ${editor[@]} || "Error: could not install EDITOR packages."
+    pkginstall $NAME ${editor[@]} || error "Could not install EDITOR packages."
 
     if [ ! -d "$REPODIR/dotfiles" ]; then
 	    cd $REPODIR/dotfiles && sudo -u $NAME stow nvim -t /home/$NAME
@@ -222,57 +223,126 @@ editor() {
     fi
 }
 
-email() {
-    email=(mutt-wizard-git)
-    pkginstall $NAME ${email[@]} || "Error: could not install EMAIL packages."
+sshkeygen() {
+    ssh=(openssh)
+    pkginstall $NAME ${ssh[@]} || error "Could not install SSH packages."
+    
+    username || error "Could not get username."
+
+    EMAIL=$(whiptail --title "SSH Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
+
+    KEYNAME=$(whiptail --title "SSH Keygen" --inputbox "Enter key's name" 8 78 "id_ed25519" 3>&1 1>&2 2>&3) || return
+
+    PASSPHRASE=$(whiptail --title "SSH Keygen" --passwordbox "Enter passphrase (empty for no passphrase)" 8 78 3>&1 1>&2 2>&3) || return
+
+    if [ ! -d "/home/$NAME/.ssh" ]; then
+        sudo -u $NAME mkdir -p "/home/$NAME/.ssh"
+    fi
+
+    ssh-keygen -t ed25519 -f /home/$NAME/.ssh/$KEYNAME -q -N "$PASSPHRASE" -C $EMAIL
+    unset EMAIL KEYNAME PASSPHRASE
 }
 
-mediasuite() {
-    multimedia=(sxiv mpd mpc mpv)
-    pkginstall $NAME ${multimedia[@]} || "Error: could not install MULTIMEDIA packages."
-
-    reader=(zathura zathura-pdf-mupdf zotero)
-    pkginstall $NAME ${reader[@]} || "Error: could not install READER packages."
+sshgithub() {
+    github=(github-cli)
+    pkginstall $NAME ${github[@]} || error "Could not install GTIHUB packages."
 }
 
-download() {
-    whiptail --title "Install Download Tools?" --yesno "Download" 8 78 || return
-    dotfiles || error "Could not fetch the dotfiles."
+gpgkeygen() {
+    username || error "Could not get username."
 
-    download=(rtorrent youtube-dl)
-    pkginstall $NAME ${download[@]} || "Error: could not install DOWNLOAD packages."
+    KEYTYPE=$(whiptail --title "GPG Keygen" --inputbox "Enter key type" 8 78 "1" 3>&1 1>&2 2>&3) || return
+    KEYLENGTH=$(whiptail --title "GPG Keygen" --inputbox "Enter key length" 8 78 "3072" 3>&1 1>&2 2>&3) || return
+    KEYVALIDITY=$(whiptail --title "GPG Keygen" --inputbox "Enter key expiration time" 8 78 "0" 3>&1 1>&2 2>&3) || return
+    REALNAME=$(whiptail --title "GPG Keygen" --inputbox "Enter real name" 8 78 3>&1 1>&2 2>&3) || return
+    EMAIL=$(whiptail --title "GPG Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
+    COMMENT=$(whiptail --title "GPG Keygen" --inputbox "Enter comment" 8 78 3>&1 1>&2 2>&3) || return
+    PASSPHRASE=$(whiptail --title "GPG Keygen" --passwordbox "Enter passphrase" 8 78 3>&1 1>&2 2>&3) || return
+
+cat >/tmp/gpg-key-params <<EOF
+    Key-Type: $KEYTYPE
+    Key-Length: $KEYLENGTH
+    Subkey-Type: $KEYTYPE
+    Subkey-Length: $KEYLENGTH
+    Name-Real: $REALNAME
+    Name-Comment: $COMMENT
+    Name-Email: $EMAIL
+    Expire-Date: $KEYVALIDITY
+    Passphrase: $PASSPHRASE
+EOF
+
+    if [ ! -d "/home/$NAME/.gnupg" ]; then
+        sudo -u $NAME mkdir -p "/home/$NAME/.gnupg"
+    fi
+
+gpg --homedir /home/$NAME/.gnupg --batch --generate-key /tmp/gpg-key-params
+
+rm -rf /tmp/gpg-key-params
+unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
 }
 
-bluetooth() {
-    bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
-    pkginstall $NAME ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."
-    systemctl enable bluetooth.service
-    systemctl start bluetooth.service
-    sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
-}
+# basicutils || error "User exit"
 
-audio() {
-    audio=(wireplumber pipewire-pulse pulsemixer)
-    pkginstall $NAME ${audio[@]} || "Error: could not install AUDIO packages."
-}
+# adduser || error "User exit"
 
-browser() {
-    browser=(firefox)
-    pkginstall $NAME ${browser[@]} || "Error: could not install BROWSER packages."
-}
+# aurhelper || error "User exit"
 
-devtools() {
-    develop=(cmake eigen clang)
-    pkginstall $NAME ${develop[@]} || "Error: could not install DEVELOP packages."
-}
+# desktop || error "User exit"
 
-sshclient() {
-    ssh=(openssh keychain)
-    pkginstall $NAME ${ssh[@]} || "Error: could not install SSH packages."
-    read -p "Insert your email: " email
-    sudo -u $NAME ssh-keygen -t ed25519 -C "$email"
-    sudo -u $NAME git config --global user.email "$email"
-}
+# terminal || error "User exit"
 
-# sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^#//g' /etc/sudoers
-# 
+# explorer || error "User exit"
+
+# editor || error "User exit"
+
+# email() {
+#     email=(mutt-wizard-git pass abook)
+#     pkginstall $NAME ${email[@]} || "Error: could not install EMAIL packages."
+# }
+
+# mediasuite() {
+#     multimedia=(sxiv mpd mpc mpv)
+#     pkginstall $NAME ${multimedia[@]} || "Error: could not install MULTIMEDIA packages."
+
+#     reader=(zathura zathura-pdf-mupdf zotero)
+#     pkginstall $NAME ${reader[@]} || "Error: could not install READER packages."
+# }
+
+# download() {
+#     whiptail --title "Install Download Tools?" --yesno "Download" 8 78 || return
+#     dotfiles || error "Could not fetch the dotfiles."
+
+#     download=(rtorrent youtube-dl)
+#     pkginstall $NAME ${download[@]} || "Error: could not install DOWNLOAD packages."
+# }
+
+# bluetooth() {
+#     bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
+#     pkginstall $NAME ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."
+#     systemctl enable bluetooth.service
+#     systemctl start bluetooth.service
+#     sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
+# }
+
+# audio() {
+#     audio=(wireplumber pipewire-pulse pulsemixer)
+#     pkginstall $NAME ${audio[@]} || "Error: could not install AUDIO packages."
+# }
+
+# browser() {
+#     browser=(firefox)
+#     pkginstall $NAME ${browser[@]} || "Error: could not install BROWSER packages."
+# }
+
+# devtools() {
+#     develop=(cmake eigen clang)
+#     pkginstall $NAME ${develop[@]} || "Error: could not install DEVELOP packages."
+# }
+
+# sshclient() {
+#     ssh=(openssh keychain)
+#     pkginstall $NAME ${ssh[@]} || "Error: could not install SSH packages."
+#     read -p "Insert your email: " email
+#     sudo -u $NAME ssh-keygen -t ed25519 -C "$email"
+#     sudo -u $NAME git config --global user.email "$email"
+# }
