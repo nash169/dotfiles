@@ -5,7 +5,7 @@ AURHELPER=yay
 
 error() {
     printf "%s\n" "$1" >&2
-    return
+    return 1
 }
 
 pkgcheck() {
@@ -149,33 +149,6 @@ EOF
     unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
 }
 
-email() {
-    whiptail --title "Email Client" --yesno "Install Email Client?" 8 78 || return
-
-    username || error "Could not get username."
-    gpgkeygen || error "Could not get username."
-
-    email=(neomutt isync msmtp pass ca-certificates gettext pam-gnupg lynx notmuch abook urlview cronie mutt-wizard-git)
-    pkginstall $NAME ${email[@]} || error "Could not install EMAIL packages."
-
-    EMAILID=$(whiptail --title "Email Client" --inputbox "Insert email" 8 78 3>&1 1>&2 2>&3) || return
-    IMAPSERVER=$(whiptail --title "Email Client" --inputbox "Insert IMAP server" 8 78 3>&1 1>&2 2>&3) || return
-    SMTPSERVER=$(whiptail --title "Email Client" --inputbox "Insert SMTP server" 8 78 3>&1 1>&2 2>&3) || return
-    GPGPUBLIC=$(whiptail --title "Email Client" --inputbox "Insert GPG public" 8 78 3>&1 1>&2 2>&3) || return
-    EMAILPASS=$(whiptail --title "GPG Keygen" --passwordbox "Enter password" 8 78 3>&1 1>&2 2>&3) || return
-    
-    sudo -u $NAME pass init $GPGPUBLIC
-
-    sudo -u $NAME mw -a $EMAILID <<EOF
-$IMAPSERVER
-$SMTPSERVER
-$EMAILPASS
-$EMAILPASS
-EOF
-
-    unset EMAILID IMAPSERVER SMTPSERVER GPGPUBLIC EMAILPASS
-}
-
 foxextension(){
 	addontmp="$(mktemp -d)"
 	trap "rm -fr $addontmp" HUP INT QUIT TERM PWR EXIT
@@ -202,6 +175,20 @@ foxextension(){
 # 	sudo -u "$username" mkdir -p "$PROFILEDIR/chrome"
 # 	[ ! -f  "$PROFILEDIR/chrome/userContent.css" ] && sudo -u "$username" echo ".vimvixen-console-frame { color-scheme: light !important; }
 # #category-more-from-mozilla { display: none !important }" > "$PROFILEDIR/chrome/userContent.css"
+}
+
+fonts() {
+    sudo -u $NAME curl -L -o /tmp/fonts.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/JetBrainsMono.zip
+    [ $? -eq 0 ] || { echo "Download failed."; return; }
+
+    sudo -u $NAME mkdir -p /tmp/fonts
+    sudo -u $NAME unzip /tmp/fonts.zip -d /tmp/fonts/
+    [ $? -eq 0 ] || { echo "Extraction failed."; return; }
+
+    FONTSDIR=/home/$NAME/.local/share/fonts
+    [ ! -d $FONTSDIR ] && sudo -u $NAME mkdir -p $FONTSDIR
+    cp /tmp/fonts/JetBrainsMonoNerdFont-* $FONTSDIR
+    # rm -rf /tmp/file.zip /tmp/fonts
 }
 
 basicutils() {
@@ -269,15 +256,17 @@ desktop() {
     desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu)
     pkginstall $NAME ${desktop[@]} || error "Could not install XORG packages."
 
+    [ ! -f "/home/$NAME/.local/share/fonts/JetBrainsMonoNerdFont-Regular.ttf" ] && fonts
+
     sudo -u $NAME git clone https://github.com/nash169/dwm.git $REPODIR/dwm 
     sudo -u $NAME git -C $REPODIR/dwm remote add upstream git://git.suckless.org/dwm 
     # sudo -u $NAME git -C $REPODIR/dwm fetch upstream
     # sudo -u $NAME git -C $REPODIR/dwm merge upstream/master
     sudo -u $NAME git -C $REPODIR/dwm checkout custom
     # sudo -u $NAME git -C $REPODIR/dwm rebase upstream/master
-    
+
+
     if [ -d "$REPODIR/dotfiles" ]; then
-        cd $REPODIR/dotfiles && sudo -u $NAME stow font -t /home/$NAME 
         cd $REPODIR/dotfiles && sudo -u $NAME stow walls -t /home/$NAME 
         cd $REPODIR/dotfiles && sudo -u $NAME stow xserver -t /home/$NAME 
         cd $REPODIR/dotfiles && sudo -u $NAME stow dwm -t $REPODIR/dwm 
@@ -303,8 +292,9 @@ terminal() {
     sudo -u $NAME git -C $REPODIR/st checkout custom
     # sudo -u $NAME git -C $REPODIR/st rebase upstream/master
 
+    [ ! -f "/home/$NAME/.local/share/fonts/JetBrainsMonoNerdFont-Regular.ttf" ] && fonts
+
     if [ -d "$REPODIR/dotfiles" ]; then
-        cd $REPODIR/dotfiles && sudo -u stow font -t /home/$NAME 
         cd $REPODIR/dotfiles && sudo -u stow st -t $REPODIR/st 
     fi
 
@@ -372,6 +362,33 @@ browser() {
     pkill -u "$NAME" firefox
 }
 
+email() {
+    whiptail --title "Email Client" --yesno "Install Email Client?" 8 78 || return
+
+    username || error "Could not get username."
+    gpgkeygen || error "Could not get username."
+
+    email=(neomutt isync msmtp pass ca-certificates gettext pam-gnupg lynx notmuch abook urlview cronie mutt-wizard-git)
+    pkginstall $NAME ${email[@]} || error "Could not install EMAIL packages."
+
+    EMAILID=$(whiptail --title "Email Client" --inputbox "Insert email" 8 78 3>&1 1>&2 2>&3) || return
+    IMAPSERVER=$(whiptail --title "Email Client" --inputbox "Insert IMAP server" 8 78 3>&1 1>&2 2>&3) || return
+    SMTPSERVER=$(whiptail --title "Email Client" --inputbox "Insert SMTP server" 8 78 3>&1 1>&2 2>&3) || return
+    GPGPUBLIC=$(whiptail --title "Email Client" --inputbox "Insert GPG public" 8 78 3>&1 1>&2 2>&3) || return
+    EMAILPASS=$(whiptail --title "GPG Keygen" --passwordbox "Enter password" 8 78 3>&1 1>&2 2>&3) || return
+    
+    sudo -u $NAME pass init $GPGPUBLIC
+
+    sudo -u $NAME mw -a $EMAILID <<EOF
+$IMAPSERVER
+$SMTPSERVER
+$EMAILPASS
+$EMAILPASS
+EOF
+
+    unset EMAILID IMAPSERVER SMTPSERVER GPGPUBLIC EMAILPASS
+}
+
 mediatools() {
     whiptail --title "Install media tools?" --yesno "Media" 8 78 || return
     username || error "Could not get username."
@@ -406,11 +423,15 @@ devtools() {
 
 # terminal || error "User exit"
 
+# shell|| error "User exit"
+
 # explorer || error "User exit"
 
 # editor || error "User exit"
 
 # browser || error "User exit"
+
+# email || error "User exit"
 
 # mediatools || error "User exit"
 
