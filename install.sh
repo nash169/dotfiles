@@ -66,6 +66,144 @@ pkginstall() {
     done
 }
 
+username() {
+    if [ -z ${NAME+x} ]; then
+	NAME=$(whiptail --inputbox "Enter the username." 8 78 3>&1 1>&2 2>&3) || return
+    fi
+}
+
+userrepo() {
+    username || error "Could not get username."
+    if [ -z "$REPODIR" ]; then
+	REPODIR=/home/$NAME/$(whiptail --inputbox "Enter repository directory." 8 78 3>&1 1>&2 2>&3) || return
+    fi
+    if [ ! -d "$REPODIR" ]; then
+        sudo -u "$NAME" mkdir -p "$REPODIR"
+    fi
+}
+
+dotfiles() {
+    userrepo || error "Could not get repository directory."
+
+    if [ ! -d "$REPODIR/dotfiles" ]; then
+        whiptail --title "Dotfiles" --yesno "Install Dofiles?" 8 78 || return
+
+        sudo -u "$NAME" git clone https://github.com/nash169/dotfiles.git "$REPODIR/dotfiles"
+
+        if [ ! -d "/home/$NAME/.config" ]; then
+	        sudo -u "$NAME" mkdir -p "/home/$NAME/.config"
+        fi
+    fi
+}
+
+sshkeygen() {
+    whiptail --title "SSH Key" --yesno "Generate SSH key?" 8 78 || return
+
+    ssh=(openssh)
+    pkginstall $NAME ${ssh[@]} || error "Could not install SSH packages."
+    
+    username || error "Could not get username."
+
+    EMAIL=$(whiptail --title "SSH Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
+
+    KEYNAME=$(whiptail --title "SSH Keygen" --inputbox "Enter key's name" 8 78 "id_ed25519" 3>&1 1>&2 2>&3) || return
+
+    PASSPHRASE=$(whiptail --title "SSH Keygen" --passwordbox "Enter passphrase (empty for no passphrase)" 8 78 3>&1 1>&2 2>&3) || return
+
+    if [ ! -d "/home/$NAME/.ssh" ]; then
+        sudo -u $NAME mkdir -p "/home/$NAME/.ssh"
+    fi
+
+    ssh-keygen -t ed25519 -f /home/$NAME/.ssh/$KEYNAME -q -N "$PASSPHRASE" -C $EMAIL
+    unset EMAIL KEYNAME PASSPHRASE
+}
+
+gpgkeygen() {
+    whiptail --title "GPG Key" --yesno "Generate GPG key?" 8 78 || return
+
+    username || error "Could not get username."
+
+    KEYTYPE=$(whiptail --title "GPG Keygen" --inputbox "Enter key type" 8 78 "1" 3>&1 1>&2 2>&3) || return
+    KEYLENGTH=$(whiptail --title "GPG Keygen" --inputbox "Enter key length" 8 78 "3072" 3>&1 1>&2 2>&3) || return
+    KEYVALIDITY=$(whiptail --title "GPG Keygen" --inputbox "Enter key expiration time" 8 78 "0" 3>&1 1>&2 2>&3) || return
+    REALNAME=$(whiptail --title "GPG Keygen" --inputbox "Enter real name" 8 78 3>&1 1>&2 2>&3) || return
+    EMAIL=$(whiptail --title "GPG Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
+    COMMENT=$(whiptail --title "GPG Keygen" --inputbox "Enter comment" 8 78 3>&1 1>&2 2>&3) || return
+    PASSPHRASE=$(whiptail --title "GPG Keygen" --passwordbox "Enter passphrase" 8 78 3>&1 1>&2 2>&3) || return
+
+cat >/tmp/gpg-key-params <<EOF
+    Key-Type: $KEYTYPE
+    Key-Length: $KEYLENGTH
+    Subkey-Type: $KEYTYPE
+    Subkey-Length: $KEYLENGTH
+    Name-Real: $REALNAME
+    Name-Comment: $COMMENT
+    Name-Email: $EMAIL
+    Expire-Date: $KEYVALIDITY
+    Passphrase: $PASSPHRASE
+EOF
+
+    sudo -u $NAME gpg --batch --generate-key /tmp/gpg-key-params
+
+    rm -rf /tmp/gpg-key-params
+    unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
+}
+
+email() {
+    whiptail --title "Email Client" --yesno "Install Email Client?" 8 78 || return
+
+    username || error "Could not get username."
+    gpgkeygen || error "Could not get username."
+
+    email=(neomutt isync msmtp pass ca-certificates gettext pam-gnupg lynx notmuch abook urlview cronie mutt-wizard-git)
+    pkginstall $NAME ${email[@]} || error "Could not install EMAIL packages."
+
+    EMAILID=$(whiptail --title "Email Client" --inputbox "Insert email" 8 78 3>&1 1>&2 2>&3) || return
+    IMAPSERVER=$(whiptail --title "Email Client" --inputbox "Insert IMAP server" 8 78 3>&1 1>&2 2>&3) || return
+    SMTPSERVER=$(whiptail --title "Email Client" --inputbox "Insert SMTP server" 8 78 3>&1 1>&2 2>&3) || return
+    GPGPUBLIC=$(whiptail --title "Email Client" --inputbox "Insert GPG public" 8 78 3>&1 1>&2 2>&3) || return
+    EMAILPASS=$(whiptail --title "GPG Keygen" --passwordbox "Enter password" 8 78 3>&1 1>&2 2>&3) || return
+    
+    sudo -u $NAME pass init $GPGPUBLIC
+
+    sudo -u $NAME mw -a $EMAILID <<EOF
+$IMAPSERVER
+$SMTPSERVER
+$EMAILPASS
+$EMAILPASS
+EOF
+
+    unset EMAILID IMAPSERVER SMTPSERVER GPGPUBLIC EMAILPASS
+}
+
+foxextension(){
+	addontmp="$(mktemp -d)"
+	trap "rm -fr $addontmp" HUP INT QUIT TERM PWR EXIT
+	IFS=' '
+    username=$1
+    PROFILEDIR="/home/$username/.mozilla/firefox/$(sed -n "/Default=.*.default-default/ s/.*=//p" "/home/$username/.mozilla/firefox/profiles.ini")"
+    sudo -u "$username" mkdir -p "$PROFILEDIR/extensions/"
+    shift
+    for addon in "$@"; do
+		if [ "$addon" = "ublock-origin" ]; then
+			addonurl="$(curl -sL https://api.github.com/repos/gorhill/uBlock/releases/latest | grep -E 'browser_download_url.*\.firefox\.xpi' | cut -d '"' -f 4)"
+		else
+			addonurl="$(curl --silent "https://addons.mozilla.org/en-US/firefox/addon/${addon}/" | grep -o 'https://addons.mozilla.org/firefox/downloads/file/[^"]*')"
+		fi
+		file="${addonurl##*/}"
+		sudo -u "$username" curl -LOs "$addonurl" > "$addontmp/$file"
+		id="$(unzip -p "$file" manifest.json | grep "\"id\"")"
+		id="${id%\"*}"
+		id="${id##*\"}"
+		mv "$file" "$pdir/extensions/$id.xpi"
+	done
+	chown -R "$username:$username" "$PROFILEDIR/extensions"
+# 	# Fix a Vim Vixen bug with dark mode not fixed on upstream:
+# 	sudo -u "$username" mkdir -p "$PROFILEDIR/chrome"
+# 	[ ! -f  "$PROFILEDIR/chrome/userContent.css" ] && sudo -u "$username" echo ".vimvixen-console-frame { color-scheme: light !important; }
+# #category-more-from-mozilla { display: none !important }" > "$PROFILEDIR/chrome/userContent.css"
+}
+
 basicutils() {
     pacman --noconfirm --needed -Sy libnewt
 	
@@ -97,43 +235,31 @@ adduser() {
     unset PASS 
 }
 
-username() {
-    if [ -z ${NAME+x} ]; then
-	NAME=$(whiptail --inputbox "Enter the username." 8 78 3>&1 1>&2 2>&3) || return
-    fi
-}
-
-userrepo() {
-    username || error "Could not get username."
-    if [ -z "$REPODIR" ]; then
-	REPODIR=/home/$NAME/$(whiptail --inputbox "Enter repository directory." 8 78 3>&1 1>&2 2>&3) || return
-    fi
-    if [ ! -d "$REPODIR" ]; then
-        sudo -u "$NAME" mkdir -p "$REPODIR"
-    fi
-}
-
 aurhelper() {
-    whiptail --title "Install the AUR helper?" --yesno "AUR helper" 8 78 || return
-
+    whiptail --title "Install AUR helper?" --yesno "AUR helper" 8 78 || return
     username || error "Could not get username."
 
     manualinstall "$NAME" "$AURHELPER"
 }
 
+bluetooth() {
+    whiptail --title "Install the bluetooth tools?" --yesno "Bluetooth" 8 78 || return
+    username || error "Could not get username."
 
-dotfiles() {
-    userrepo || error "Could not get repository directory."
+    bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
+    pkginstall $NAME ${bluetooth[@]} || error "Could not install BLUETOOTH packages."
+    
+    systemctl enable bluetooth.service
+    systemctl start bluetooth.service
+    sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
+}
 
-    if [ ! -d "$REPODIR/dotfiles" ]; then
-        whiptail --title "Dotfiles" --yesno "Install Dofiles?" 8 78 || return
+audio() {
+    whiptail --title "Install audio tools?" --yesno "Audio" 8 78 || return
+    username || error "Could not get username."
 
-        sudo -u "$NAME" git clone https://github.com/nash169/dotfiles.git "$REPODIR/dotfiles"
-
-        if [ ! -d "/home/$NAME/.config" ]; then
-	        sudo -u "$NAME" mkdir -p "/home/$NAME/.config"
-        fi
-    fi
+    audio=(wireplumber pipewire-pulse pulsemixer)
+    pkginstall $NAME ${audio[@]} || error "Could not install AUDIO packages."
 }
 
 desktop() {
@@ -223,62 +349,51 @@ editor() {
     fi
 }
 
-sshkeygen() {
-    ssh=(openssh)
-    pkginstall $NAME ${ssh[@]} || error "Could not install SSH packages."
+browser() {
+    whiptail --title "Browser" --yesno "Install Browser?" 8 78 || return
+
+    browser=(firefox)
+    pkginstall $NAME ${browser[@]} || error "Could not install BROWSER packages."
+
+    sudo -u "$NAME" firefox --headless >/dev/null 2>&1 &
+    sleep 1
+
+    PROFILEDIR="/home/$NAME/.mozilla/firefox/$(sed -n "/Default=.*.default-default/ s/.*=//p" "/home/$NAME/.mozilla/firefox/profiles.ini")"
     
-    username || error "Could not get username."
+    sudo -u $NAME git clone https://github.com/arkenfox/user.js.git $REPODIR/user.js 
 
-    EMAIL=$(whiptail --title "SSH Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
+    ln -s "$REPODIR/dotfiles/browser/user-overrides.js" "$PROFILEDIR/user-overrides.js"
+    cp $REPODIR/user.js/updater.sh $PROFILEDIR && sh $PROFILEDIR/updater.sh
+    cp $REPODIR/user.js/prefsCleaner.sh $PROFILEDIR && sh $PROFILEDIR/prefsCleaner.sh
 
-    KEYNAME=$(whiptail --title "SSH Keygen" --inputbox "Enter key's name" 8 78 "id_ed25519" 3>&1 1>&2 2>&3) || return
+    foxextensions=(ublock-origin) # decentraleyes istilldontcareaboutcookies vim-vixen
+    foxextension $NAME ${foxextensions[@]} || error "Could not install FIREFOX extensions."
 
-    PASSPHRASE=$(whiptail --title "SSH Keygen" --passwordbox "Enter passphrase (empty for no passphrase)" 8 78 3>&1 1>&2 2>&3) || return
-
-    if [ ! -d "/home/$NAME/.ssh" ]; then
-        sudo -u $NAME mkdir -p "/home/$NAME/.ssh"
-    fi
-
-    ssh-keygen -t ed25519 -f /home/$NAME/.ssh/$KEYNAME -q -N "$PASSPHRASE" -C $EMAIL
-    unset EMAIL KEYNAME PASSPHRASE
+    pkill -u "$NAME" firefox
 }
 
-sshgithub() {
-    github=(github-cli)
-    pkginstall $NAME ${github[@]} || error "Could not install GTIHUB packages."
-}
-
-gpgkeygen() {
+mediatools() {
+    whiptail --title "Install media tools?" --yesno "Media" 8 78 || return
     username || error "Could not get username."
 
-    KEYTYPE=$(whiptail --title "GPG Keygen" --inputbox "Enter key type" 8 78 "1" 3>&1 1>&2 2>&3) || return
-    KEYLENGTH=$(whiptail --title "GPG Keygen" --inputbox "Enter key length" 8 78 "3072" 3>&1 1>&2 2>&3) || return
-    KEYVALIDITY=$(whiptail --title "GPG Keygen" --inputbox "Enter key expiration time" 8 78 "0" 3>&1 1>&2 2>&3) || return
-    REALNAME=$(whiptail --title "GPG Keygen" --inputbox "Enter real name" 8 78 3>&1 1>&2 2>&3) || return
-    EMAIL=$(whiptail --title "GPG Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
-    COMMENT=$(whiptail --title "GPG Keygen" --inputbox "Enter comment" 8 78 3>&1 1>&2 2>&3) || return
-    PASSPHRASE=$(whiptail --title "GPG Keygen" --passwordbox "Enter passphrase" 8 78 3>&1 1>&2 2>&3) || return
+    mediatools=(sxiv mpd mpc mpv zathura zathura-pdf-mupdf zotero)
+    pkginstall $NAME ${mediatools[@]} || error "Could not install MEDIA TOOLS packages."
+}
 
-cat >/tmp/gpg-key-params <<EOF
-    Key-Type: $KEYTYPE
-    Key-Length: $KEYLENGTH
-    Subkey-Type: $KEYTYPE
-    Subkey-Length: $KEYLENGTH
-    Name-Real: $REALNAME
-    Name-Comment: $COMMENT
-    Name-Email: $EMAIL
-    Expire-Date: $KEYVALIDITY
-    Passphrase: $PASSPHRASE
-EOF
+downtools() {
+    whiptail --title "Install Download Tools?" --yesno "Download" 8 78 || return
+    username || error "Could not get username."
 
-    if [ ! -d "/home/$NAME/.gnupg" ]; then
-        sudo -u $NAME mkdir -p "/home/$NAME/.gnupg"
-    fi
+    download=(transmission-cli youtube-dl) # rtorrent
+    pkginstall $NAME ${download[@]} || error "Could not install DOWNLOAD TOOLS packages."
+}
 
-gpg --homedir /home/$NAME/.gnupg --batch --generate-key /tmp/gpg-key-params
+devtools() {
+    whiptail --title "Install Download Tools?" --yesno "Download" 8 78 || return
+    username || error "Could not get username."
 
-rm -rf /tmp/gpg-key-params
-unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
+    devtools=(cmake eigen clang)
+    pkginstall $NAME ${devtools[@]} || error "Could not install DEVELOPMENT TOOLS packages."
 }
 
 # basicutils || error "User exit"
@@ -295,54 +410,16 @@ unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
 
 # editor || error "User exit"
 
-# email() {
-#     email=(mutt-wizard-git pass abook)
-#     pkginstall $NAME ${email[@]} || "Error: could not install EMAIL packages."
-# }
+# browser || error "User exit"
 
-# mediasuite() {
-#     multimedia=(sxiv mpd mpc mpv)
-#     pkginstall $NAME ${multimedia[@]} || "Error: could not install MULTIMEDIA packages."
+# mediatools || error "User exit"
 
-#     reader=(zathura zathura-pdf-mupdf zotero)
-#     pkginstall $NAME ${reader[@]} || "Error: could not install READER packages."
-# }
+# downtools || error "User exit"
 
-# download() {
-#     whiptail --title "Install Download Tools?" --yesno "Download" 8 78 || return
-#     dotfiles || error "Could not fetch the dotfiles."
+# devtools || error "User exit"
 
-#     download=(rtorrent youtube-dl)
-#     pkginstall $NAME ${download[@]} || "Error: could not install DOWNLOAD packages."
-# }
 
-# bluetooth() {
-#     bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
-#     pkginstall $NAME ${bluetooth[@]} || "Error: could not install BLUETOOTH packages."
-#     systemctl enable bluetooth.service
-#     systemctl start bluetooth.service
-#     sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
-# }
-
-# audio() {
-#     audio=(wireplumber pipewire-pulse pulsemixer)
-#     pkginstall $NAME ${audio[@]} || "Error: could not install AUDIO packages."
-# }
-
-# browser() {
-#     browser=(firefox)
-#     pkginstall $NAME ${browser[@]} || "Error: could not install BROWSER packages."
-# }
-
-# devtools() {
-#     develop=(cmake eigen clang)
-#     pkginstall $NAME ${develop[@]} || "Error: could not install DEVELOP packages."
-# }
-
-# sshclient() {
-#     ssh=(openssh keychain)
-#     pkginstall $NAME ${ssh[@]} || "Error: could not install SSH packages."
-#     read -p "Insert your email: " email
-#     sudo -u $NAME ssh-keygen -t ed25519 -C "$email"
-#     sudo -u $NAME git config --global user.email "$email"
+# sshgithub() {
+#     github=(github-cli)
+#     pkginstall $NAME ${github[@]} || error "Could not install GTIHUB packages."
 # }
