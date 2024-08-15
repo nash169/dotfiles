@@ -149,37 +149,6 @@ EOF
     unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
 }
 
-foxextension(){
-    username=$1
-    PROFILEDIR=$2
-    echo $username
-    echo $PROFILEDIR
-    addontmp="$(mktemp -d)"
-    trap "rm -fr $addontmp" HUP INT QUIT TERM PWR EXIT
-    IFS=' '
-    sudo -u "$username" mkdir -p "$PROFILEDIR/extensions/"
-    shift
-    for addon in "$@"; do
-	addonurl="$(curl --silent "https://addons.mozilla.org/en-US/firefox/addon/${addon}/" | grep -o 'https://addons.mozilla.org/firefox/downloads/file/[^"]*')"
-	echo $addon
-	echo $addonurl
-	file="${addonurl##*/}"
-	echo $file
-	echo $addontmp
-	sudo -u $username curl -L -o "$addontmp/$file" "$addonurl"
-	id="$(unzip -p "$file" manifest.json | grep "\"id\"")"
-	id="${id%\"*}"
-	id="${id##*\"}"
-	echo $id
-	mv "$addontmp/$file" "$PROFILEDIR/extensions/$id.xpi"
-    done
-    chown -R "$username:$username" "$PROFILEDIR/extensions"
-#     # Fix a Vim Vixen bug with dark mode not fixed on upstream:
-#     sudo -u "$username" mkdir -p "$PROFILEDIR/chrome"
-#     [ ! -f  "$PROFILEDIR/chrome/userContent.css" ] && sudo -u "$username" echo ".vimvixen-console-frame { color-scheme: light !important; }
-# #category-more-from-mozilla { display: none !important }" > "$PROFILEDIR/chrome/userContent.css"
-}
-
 fonts() {
     sudo -u $NAME curl -L -o /tmp/fonts.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/JetBrainsMono.zip
     [ $? -eq 0 ] || { echo "Download failed."; return; }
@@ -352,19 +321,30 @@ browser() {
     pkginstall $NAME ${browser[@]} || error "Could not install BROWSER packages."
 
     PROFILENAME=$(whiptail --title "Browser" --inputbox "Enter profile name" 8 78 "default-release" 3>&1 1>&2 2>&3) || return
-    # PROFILEDIR=$(find /home/$NAME/.mozilla/firefox/ -type d -name ".*$PROFILENAME")
-    PROFILEDIR=/home/$NAME/.mozilla/firefox/$(sed -n "/Path=.*.$PROFILENAME/ s/.*=//p" "/home/$NAME/.mozilla/firefox/profiles.ini")
 
     sudo -u "$NAME" firefox --headless >/dev/null 2>&1 &
     sleep 1
+
+    # PROFILEDIR=$(find /home/$NAME/.mozilla/firefox/ -type d -name ".*$PROFILENAME")
+    PROFILEDIR=/home/$NAME/.mozilla/firefox/$(sed -n "/Path=.*.$PROFILENAME/ s/.*=//p" "/home/$NAME/.mozilla/firefox/profiles.ini")
     
     sudo -u $NAME git clone https://github.com/arkenfox/user.js.git $REPODIR/user.js 
     sudo -u $NAME ln -s "$REPODIR/dotfiles/browser/user-overrides.js" "$PROFILEDIR/user-overrides.js"
     sudo -u $NAME cp $REPODIR/user.js/updater.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh updater.sh <<< $'Y'
     sudo -u $NAME cp $REPODIR/user.js/prefsCleaner.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh prefsCleaner.sh <<< $'1'
 
-    # foxextensions=(ublock-origin) # decentraleyes istilldontcareaboutcookies vim-vixen
-    # foxextension $NAME $PROFILEDIR ${foxextensions[@]} || error "Could not install FIREFOX extensions."
+    addons=(ublock-origin) # decentraleyes istilldontcareaboutcookies vim-vixen
+    sudo -u "$username" mkdir -p "$PROFILEDIR/extensions/"
+    
+    for addon in ${addons[@]}; do
+        addonurl="$(curl --silent "https://addons.mozilla.org/en-US/firefox/addon/${addon}/" | grep -o 'https://addons.mozilla.org/firefox/downloads/file/[^"]*')"
+        file="${addonurl##*/}"
+        sudo -u $NAME curl -L -o "/tmp/$file" "$addonurl"
+        id="$(sudo -u $NAME unzip -p "/tmp/$file" manifest.json | grep "\"id\"")"
+        id="${id%\"*}"
+        id="${id##*\"}"
+        sudo -u $NAME mv "/tmp/$file" "$PROFILEDIR/extensions/$id.xpi"
+    done
 
     sudo -u $NAME pkill firefox
 }
@@ -440,7 +420,7 @@ devtools() {
 
 # email || error "User exit"
 
-# browser || error "User exit"
+browser || error "User exit"
 
 # mediatools || error "User exit"
 

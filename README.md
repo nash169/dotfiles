@@ -2,17 +2,14 @@
 This repository contains my dotfiles.
 
 ## ToDo list
-- add lf features (image visualization)
 - add image visualization in nvim explorer
-- complete configurator
 - remove clickable x from buffers
 - add slock
 - zsh not working properly in vim mode
-- complete firefox configuration
 - install and configure syncthing
 - pyright not working
 - set correct lynting opts for python
-- increae mouse speed for laptops
+- increase mouse speed for laptops
 - three fingers drag
 - autosync emails
 - configure bluetooth headset
