@@ -83,7 +83,7 @@ userrepo() {
 }
 
 dotfiles() {
-    userrepo || error "Could not get repository directory."
+    userrepo || { echo "Could not repository directory"; return; }
 
     if [ ! -d "$REPODIR/dotfiles" ]; then
         whiptail --title "Dotfiles" --yesno "Install Dofiles?" 8 78 || return
@@ -150,30 +150,33 @@ EOF
 }
 
 foxextension(){
-	addontmp="$(mktemp -d)"
-	trap "rm -fr $addontmp" HUP INT QUIT TERM PWR EXIT
-	IFS=' '
     username=$1
-    PROFILEDIR="/home/$username/.mozilla/firefox/$(sed -n "/Default=.*.default-default/ s/.*=//p" "/home/$username/.mozilla/firefox/profiles.ini")"
+    PROFILEDIR=$2
+    echo $username
+    echo $PROFILEDIR
+    addontmp="$(mktemp -d)"
+    trap "rm -fr $addontmp" HUP INT QUIT TERM PWR EXIT
+    IFS=' '
     sudo -u "$username" mkdir -p "$PROFILEDIR/extensions/"
     shift
     for addon in "$@"; do
-		if [ "$addon" = "ublock-origin" ]; then
-			addonurl="$(curl -sL https://api.github.com/repos/gorhill/uBlock/releases/latest | grep -E 'browser_download_url.*\.firefox\.xpi' | cut -d '"' -f 4)"
-		else
-			addonurl="$(curl --silent "https://addons.mozilla.org/en-US/firefox/addon/${addon}/" | grep -o 'https://addons.mozilla.org/firefox/downloads/file/[^"]*')"
-		fi
-		file="${addonurl##*/}"
-		sudo -u "$username" curl -LOs "$addonurl" > "$addontmp/$file"
-		id="$(unzip -p "$file" manifest.json | grep "\"id\"")"
-		id="${id%\"*}"
-		id="${id##*\"}"
-		mv "$file" "$pdir/extensions/$id.xpi"
-	done
-	chown -R "$username:$username" "$PROFILEDIR/extensions"
-# 	# Fix a Vim Vixen bug with dark mode not fixed on upstream:
-# 	sudo -u "$username" mkdir -p "$PROFILEDIR/chrome"
-# 	[ ! -f  "$PROFILEDIR/chrome/userContent.css" ] && sudo -u "$username" echo ".vimvixen-console-frame { color-scheme: light !important; }
+	addonurl="$(curl --silent "https://addons.mozilla.org/en-US/firefox/addon/${addon}/" | grep -o 'https://addons.mozilla.org/firefox/downloads/file/[^"]*')"
+	echo $addon
+	echo $addonurl
+	file="${addonurl##*/}"
+	echo $file
+	echo $addontmp
+	sudo -u $username curl -L -o "$addontmp/$file" "$addonurl"
+	id="$(unzip -p "$file" manifest.json | grep "\"id\"")"
+	id="${id%\"*}"
+	id="${id##*\"}"
+	echo $id
+	mv "$addontmp/$file" "$PROFILEDIR/extensions/$id.xpi"
+    done
+    chown -R "$username:$username" "$PROFILEDIR/extensions"
+#     # Fix a Vim Vixen bug with dark mode not fixed on upstream:
+#     sudo -u "$username" mkdir -p "$PROFILEDIR/chrome"
+#     [ ! -f  "$PROFILEDIR/chrome/userContent.css" ] && sudo -u "$username" echo ".vimvixen-console-frame { color-scheme: light !important; }
 # #category-more-from-mozilla { display: none !important }" > "$PROFILEDIR/chrome/userContent.css"
 }
 
@@ -330,7 +333,8 @@ editor() {
     whiptail --title "Editor" --yesno "Install Editor?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
-    editor=(neovim python-pynvim texlive-bin texlive-fontsrecomended texlive-latexextra texlive-latexrecomended texlive-latex texlive-basic texlive-xetex texlive-mathscience texlive-fontsextra texlive-langenglish texlive-context texlive-luatex texlive-plaingeneric texlive-binextra texlive-bibtexextra texlive-pictures texlive-langfrench texlive-langgerman texlive-fontutils) # ninja tree-sitter lua luarocks
+    editor=(neovim python-pynvim) 
+    # texlive-bin texlive-fontsrecomended texlive-latexextra texlive-latexrecomended texlive-latex texlive-basic texlive-xetex texlive-mathscience texlive-fontsextra texlive-langenglish texlive-context texlive-luatex texlive-plaingeneric texlive-binextra texlive-bibtexextra texlive-pictures texlive-langfrench texlive-langgerman texlive-fontutils) # ninja tree-sitter lua luarocks
     pkginstall $NAME ${editor[@]} || error "Could not install EDITOR packages."
 
     if [ ! -d "$REPODIR/dotfiles" ]; then
@@ -341,41 +345,45 @@ editor() {
 
 browser() {
     whiptail --title "Browser" --yesno "Install Browser?" 8 78 || return
+    username || { echo "Could not get username"; return; }
+    userrepo || { echo "Could not repository directory"; return; }
 
     browser=(firefox)
     pkginstall $NAME ${browser[@]} || error "Could not install BROWSER packages."
 
+    PROFILENAME=$(whiptail --title "Browser" --inputbox "Enter profile name" 8 78 "default-release" 3>&1 1>&2 2>&3) || return
+    # PROFILEDIR=$(find /home/$NAME/.mozilla/firefox/ -type d -name ".*$PROFILENAME")
+    PROFILEDIR=/home/$NAME/.mozilla/firefox/$(sed -n "/Path=.*.$PROFILENAME/ s/.*=//p" "/home/$NAME/.mozilla/firefox/profiles.ini")
+
     sudo -u "$NAME" firefox --headless >/dev/null 2>&1 &
     sleep 1
-
-    PROFILEDIR="/home/$NAME/.mozilla/firefox/$(sed -n "/Default=.*.default-default/ s/.*=//p" "/home/$NAME/.mozilla/firefox/profiles.ini")"
     
     sudo -u $NAME git clone https://github.com/arkenfox/user.js.git $REPODIR/user.js 
+    sudo -u $NAME ln -s "$REPODIR/dotfiles/browser/user-overrides.js" "$PROFILEDIR/user-overrides.js"
+    sudo -u $NAME cp $REPODIR/user.js/updater.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh updater.sh <<< $'Y'
+    sudo -u $NAME cp $REPODIR/user.js/prefsCleaner.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh prefsCleaner.sh <<< $'1'
 
-    ln -s "$REPODIR/dotfiles/browser/user-overrides.js" "$PROFILEDIR/user-overrides.js"
-    cp $REPODIR/user.js/updater.sh $PROFILEDIR && sh $PROFILEDIR/updater.sh
-    cp $REPODIR/user.js/prefsCleaner.sh $PROFILEDIR && sh $PROFILEDIR/prefsCleaner.sh
+    # foxextensions=(ublock-origin) # decentraleyes istilldontcareaboutcookies vim-vixen
+    # foxextension $NAME $PROFILEDIR ${foxextensions[@]} || error "Could not install FIREFOX extensions."
 
-    foxextensions=(ublock-origin) # decentraleyes istilldontcareaboutcookies vim-vixen
-    foxextension $NAME ${foxextensions[@]} || error "Could not install FIREFOX extensions."
-
-    pkill -u "$NAME" firefox
+    sudo -u $NAME pkill firefox
 }
 
 email() {
     whiptail --title "Email Client" --yesno "Install Email Client?" 8 78 || return
 
-    username || error "Could not get username."
-    gpgkeygen || error "Could not get username."
+    username || { echo "Could not get username"; return; }
+    gpgkeygen || { echo "Could not generate GPG key pair"; return; }
 
     email=(neomutt isync msmtp pass ca-certificates gettext pam-gnupg lynx notmuch abook urlview cronie mutt-wizard-git)
     pkginstall $NAME ${email[@]} || error "Could not install EMAIL packages."
 
     EMAILID=$(whiptail --title "Email Client" --inputbox "Insert email" 8 78 3>&1 1>&2 2>&3) || return
     IMAPSERVER=$(whiptail --title "Email Client" --inputbox "Insert IMAP server" 8 78 3>&1 1>&2 2>&3) || return
-    SMTPSERVER=$(whiptail --title "Email Client" --inputbox "Insert SMTP server" 8 78 3>&1 1>&2 2>&3) || return
+    SMTPSERVER=$(whiptail --title "Email Client" --inputbox "Insert SMTP server" 8 78 $IMAPSERVER 3>&1 1>&2 2>&3) || return
+    EMAILPASS=$(whiptail --title "Email Client" --passwordbox "Enter password" 8 78 3>&1 1>&2 2>&3) || return
     GPGPUBLIC=$(whiptail --title "Email Client" --inputbox "Insert GPG public" 8 78 3>&1 1>&2 2>&3) || return
-    EMAILPASS=$(whiptail --title "GPG Keygen" --passwordbox "Enter password" 8 78 3>&1 1>&2 2>&3) || return
+    GPGPASS=$(whiptail --title "Email Client" --passwordbox "Enter GPG passphrase" 8 78 3>&1 1>&2 2>&3) || return
     
     sudo -u $NAME pass init $GPGPUBLIC
 
@@ -384,9 +392,10 @@ $IMAPSERVER
 $SMTPSERVER
 $EMAILPASS
 $EMAILPASS
+$GPGPASS
 EOF
 
-    unset EMAILID IMAPSERVER SMTPSERVER GPGPUBLIC EMAILPASS
+    unset EMAILID IMAPSERVER SMTPSERVER GPGPUBLIC EMAILPASS GPGPASS
 }
 
 mediatools() {
@@ -429,9 +438,9 @@ devtools() {
 
 # editor || error "User exit"
 
-# browser || error "User exit"
-
 # email || error "User exit"
+
+# browser || error "User exit"
 
 # mediatools || error "User exit"
 
