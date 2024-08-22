@@ -17,3 +17,4 @@ This repository contains my dotfiles.
 ## useful links
 - https://medium.com/@schtoeffel/you-don-t-need-more-than-one-cursor-in-vim-2c44117d51db
 - https://www.youtube.com/@joseanmartinez/videos
+- https://www.zotero.org/support/kb/multiple_profiles

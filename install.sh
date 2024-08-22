@@ -205,11 +205,12 @@ bluetooth() {
     whiptail --title "Install the bluetooth tools?" --yesno "Bluetooth" 8 78 || return
     username || error "Could not get username."
 
-    bluetooth=(pulseaudio-bluetooth bluez bluez-libs bluez-utils blueberry)
+    bluetooth=(bluez bluez-utils) 
     pkginstall $NAME ${bluetooth[@]} || error "Could not install BLUETOOTH packages."
     
     systemctl enable bluetooth.service
     systemctl start bluetooth.service
+
     sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
 }
 
@@ -217,15 +218,22 @@ audio() {
     whiptail --title "Install audio tools?" --yesno "Audio" 8 78 || return
     username || error "Could not get username."
 
-    audio=(wireplumber pipewire-pulse pulsemixer)
+    audio=(pipewire wireplumber pipewire-pulse)
     pkginstall $NAME ${audio[@]} || error "Could not install AUDIO packages."
+
+    systemctl stop pulseaudio.service
+    systemctl start pipewire-pulse.socket
 }
 
 desktop() {
     whiptail --title "Desktop" --yesno "Install Desktop?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
-    desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu)
+    desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu maim)
+    # xcompmgr	-> terminal transparency
+    # feh	-> set desktop background
+    # slock	-> lock screen
+    # maim	-> take screenshot
     pkginstall $NAME ${desktop[@]} || error "Could not install XORG packages."
 
     [ ! -f "/home/$NAME/.local/share/fonts/JetBrainsMonoNerdFont-Regular.ttf" ] && fonts

@@ -105,7 +105,7 @@ static const Key keys[] = {
     /* modifier                     key        function        argument */
     {MODKEY, XK_space, spawn, {.v = dmenucmd}},
     {MODKEY, XK_Return, spawn, {.v = termcmd}},
-    {MODKEY, XK_e, spawn, {.v = (const char*[]){"st", "-e", "lf", NULL}}},
+    {MODKEY, XK_e, spawn, {.v = (const char*[]){"st", "-e", "lfrun", NULL}}},
     {MODKEY, XK_n, spawn, {.v = (const char*[]){"st", "-e", "neomutt", NULL}}},
     {MODKEY, XK_b, togglebar, {0}},
     {MODKEY | ShiftMask, XK_j, rotatestack, {.i = +1}},
