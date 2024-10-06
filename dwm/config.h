@@ -67,11 +67,11 @@ static const Layout layouts[] = {
 
 /* key definitions */
 #define MODKEY Mod4Mask
-#define TAGKEYS(KEY, TAG)                                          \
-    {MODKEY, KEY, view, {.ui = 1 << TAG}},                         \
-        {MODKEY | ControlMask, KEY, toggleview, {.ui = 1 << TAG}}, \
-        {MODKEY | ShiftMask, KEY, tag, {.ui = 1 << TAG}},          \
-        {MODKEY | ControlMask | ShiftMask, KEY, toggletag, {.ui = 1 << TAG}},
+#define TAGKEYS(KEY, TAG) \
+    {MODKEY, KEY, view, {.ui = 1 << TAG}}, // move across different workspaces
+{MODKEY | ControlMask, KEY, toggleview, {.ui = 1 << TAG}}, // visualize one workspace into another workspaces
+    {MODKEY | ShiftMask, KEY, tag, {.ui = 1 << TAG}}, // move window in another workspace
+    {MODKEY | ControlMask | ShiftMask, KEY, toggletag, {.ui = 1 << TAG}}, // duplicate one window across multiple workspaces
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd)                                          \
@@ -79,8 +79,8 @@ static const Layout layouts[] = {
         .v = (const char*[]) { "/bin/sh", "-c", cmd, NULL } \
     }
 
-/* commands */
-static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
+    /* commands */
+    static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char* dmenucmd[] = {"dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", bg, "-nf", fg, "-sb", rhl, "-sf", hl, NULL};
 static const char* termcmd[] = {"st", NULL};
 
@@ -103,33 +103,52 @@ static const char* kbd_light_down[] = {"brightnessctl", "--device=smc::kbd_backl
 
 static const Key keys[] = {
     /* modifier                     key        function        argument */
+    /*--------------------------------------------------------------*/
+    // open dmenu bar
     {MODKEY, XK_space, spawn, {.v = dmenucmd}},
+    // open terminal
     {MODKEY, XK_Return, spawn, {.v = termcmd}},
+    // open file explorer
     {MODKEY, XK_e, spawn, {.v = (const char*[]){"st", "-e", "lfrun", NULL}}},
+    // open email client
     {MODKEY, XK_n, spawn, {.v = (const char*[]){"st", "-e", "neomutt", NULL}}},
-    {MODKEY, XK_b, togglebar, {0}},
-    {MODKEY | ShiftMask, XK_j, rotatestack, {.i = +1}},
-    {MODKEY, XK_r, rotatestack, {.i = -1}},
+    // close window
+    {MODKEY, XK_q, killclient, {0}},
+    // standard stack layout
+    {MODKEY, XK_t, setlayout, {.v = &layouts[0]}},
+    // focus on particular window
+    {MODKEY, XK_m, setlayout, {.v = &layouts[2]}},
+    // all windows floating
+    {MODKEY, XK_f, setlayout, {.v = &layouts[1]}},
+    // promote to master
+    {MODKEY | ShiftMask, XK_Return, zoom, {0}},
+    // enter/exit floating mode for a single window
+    {MODKEY | ShiftMask, XK_f, togglefloating, {0}},
+    // move focus across windows
     {MODKEY, XK_j, focusstack, {.i = +1}},
     {MODKEY, XK_k, focusstack, {.i = -1}},
-    {MODKEY, XK_i, incnmaster, {.i = +1}},
-    {MODKEY, XK_d, incnmaster, {.i = -1}},
+    // rotate stack
+    {MODKEY, XK_r, rotatestack, {.i = -1}},
+    // hide/show status bar
+    {MODKEY, XK_b, togglebar, {0}},
+    // active window followig across workspaces
+    {MODKEY | ShiftMask, XK_0, tag, {.ui = ~0}},
+    // resize layout horizontally
     {MODKEY, XK_h, setmfact, {.f = -0.05}},
     {MODKEY, XK_l, setmfact, {.f = +0.05}},
-    {MODKEY | ShiftMask, XK_Return, zoom, {0}},
+    // move across the last pair of workspaces
     {MODKEY, XK_Tab, view, {0}},
-    {MODKEY, XK_q, killclient, {0}},
-    {MODKEY, XK_t, setlayout, {.v = &layouts[0]}},
-    {MODKEY, XK_f, setlayout, {.v = &layouts[1]}},
-    {MODKEY, XK_m, setlayout, {.v = &layouts[2]}},
-    // {MODKEY, XK_space, setlayout, {0}},
-    {MODKEY | ShiftMask, XK_space, togglefloating, {0}},
+    // increase/decrease number of windows in master
+    {MODKEY, XK_i, incnmaster, {.i = +1}},
+    {MODKEY, XK_d, incnmaster, {.i = -1}},
+    // all windows in one workspace
     {MODKEY, XK_0, view, {.ui = ~0}},
-    {MODKEY | ShiftMask, XK_0, tag, {.ui = ~0}},
+    // multi screen options
     {MODKEY, XK_comma, focusmon, {.i = -1}},
     {MODKEY, XK_period, focusmon, {.i = +1}},
     {MODKEY | ShiftMask, XK_comma, tagmon, {.i = -1}},
     {MODKEY | ShiftMask, XK_period, tagmon, {.i = +1}},
+    /*--------------------------------------------------------------*/
     {0, XF86XK_MonBrightnessUp, spawn, {.v = mon_light_up}},
     {0, XF86XK_MonBrightnessDown, spawn, {.v = mon_light_down}},
     {0, XF86XK_KbdBrightnessUp, spawn, {.v = kbd_light_up}},
