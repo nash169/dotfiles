@@ -13,6 +13,11 @@ This repository contains my dotfiles.
 - three fingers drag
 - autosync emails
 - configure bluetooth headset
+- dropdown terminal
+- mount external drives
+- add lf option to create/delete files/folders
+- dynamic control gaps spacing
+- internation us keyboard
 
 ## useful links
 - https://medium.com/@schtoeffel/you-don-t-need-more-than-one-cursor-in-vim-2c44117d51db
