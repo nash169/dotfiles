@@ -1,12 +1,14 @@
 #!/bin/bash
 
-nmcli connection show
+# nmcli connection show
+nmcli device wifi list
 
-read -p "Do you want to connect to a new network? [y/N]: " input
+read -p "Do you want to connect to a new network? [y/N]: " choice
+choice=${choice:-N}
 
-if [ $input = "y" ] || [ $input = "Y" ]; then
+if [ $choice = "y" ] || [ $choice = "Y" ]; then
   read -p "Network name: " net
-  read -s "Network password: " pass
+  read -s -p "Network password: " pass
 
   nmcli device wifi connect $net password $pass
 fi
