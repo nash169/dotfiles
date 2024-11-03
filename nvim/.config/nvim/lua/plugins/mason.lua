@@ -31,6 +31,9 @@ return {
                 "pyright",
                 "clangd",
             },
+	    pip = {
+		install_args = {"--break-system-packages"},
+	    },
             -- auto-install configured servers (with lspconfig)
             automatic_installation = true, -- not the same as ensure_installed
         })
@@ -40,7 +43,7 @@ return {
                 "stylua", -- lua formatter
                 "autopep8", -- python formatter
                 "clang-format", -- c++ formatter
-                "pylint", -- python linter
+                -- "pylint", -- python linter
             },
         })
     end,
