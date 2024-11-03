@@ -7,9 +7,6 @@ vim.schedule(function()
     opt.clipboard = "unnamedplus"
 end)
 
--- show relative line numbers
-opt.relativenumber = true
-
 -- shows absolute line number on cursor line (when relative number is on)
 opt.number = true
 

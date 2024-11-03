@@ -39,3 +39,6 @@ keymap("n", "<A-b>", ":set wrap! linebreak!<CR>", opts)
 keymap("n", "<S-Tab>", ":bprevious<CR>", opts)
 keymap("n", "<leader>q", ":bprevious | bd #<CR>", opts)
 keymap("n", "<leader>n", ":enew<CR>", opts)
+
+-- toggle relative number
+keymap("n", "<A-r>", ":set relativenumber!<CR>", opts)
