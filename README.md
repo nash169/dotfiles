@@ -3,7 +3,6 @@ This repository contains my dotfiles.
 
 ## ToDo list
 - add image visualization in nvim explorer
-- remove clickable x from buffers
 - add slock
 - zsh not working properly in vim mode
 - install and configure syncthing
@@ -17,7 +16,7 @@ This repository contains my dotfiles.
 - mount external drives
 - add lf option to create/delete files/folders
 - dynamic control gaps spacing
-- internation us keyboard
+- international us keyboard
 
 ## useful links
 - https://medium.com/@schtoeffel/you-don-t-need-more-than-one-cursor-in-vim-2c44117d51db
