@@ -2,6 +2,15 @@ require("core")
 
 -- window navigation CTRL+<h,j,k,l>
 
--- dropdown terminal ALT+t
+-- split window <leader>s(v,h,x) (vertical, horizontal, close)
 
--- dropdown lazygit ALT+g
+-- dropdown terminal ALT+;
+
+-- dropdown lazygit ALT+'t
+
+-- git next/prev hunk ALT+j/k
+
+-- git preview/reset hunk <leader>hh/hr
+
+-- tab navigate next/prev Tab/Shift+Tab
+
