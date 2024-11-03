@@ -14,3 +14,4 @@ require("core")
 
 -- tab navigate next/prev Tab/Shift+Tab
 
+-- compile/stop/clear latex <leader>ll/lk/lc
