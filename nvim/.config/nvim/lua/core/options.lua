@@ -16,9 +16,6 @@ opt.number = true
 -- 2 spaces for indent width
 opt.shiftwidth = 4
 
--- linebreak for latex (wrap is enabled by default)
-opt.linebreak = true
-
 -- highlight the current cursor line``
 opt.cursorline = true
 
