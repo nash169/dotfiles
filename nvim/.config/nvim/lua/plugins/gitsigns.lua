@@ -7,10 +7,10 @@ return {
                 local gs = package.loaded.gitsigns
                 local map = vim.keymap.set
 
-                map("n", "<leader>hn", gs.next_hunk)
-                map("n", "<leader>hp", gs.prev_hunk)
+                map("n", "<A-j>", gs.next_hunk)
+                map("n", "<A-k>", gs.prev_hunk)
                 map("n", "<leader>hr", gs.reset_hunk)
-                map("n", "<leader>lb", gs.blame_line)
+                map("n", "<leader>hh", gs.preview_hunk)
             end,
         })
     end,
