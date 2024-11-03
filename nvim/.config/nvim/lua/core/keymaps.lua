@@ -33,8 +33,9 @@ keymap("n", "<leader>sh", "<C-w>s", { desc = "Split window horizontally" })
 keymap("n", "<leader>sx", "<cmd>close<CR>", { desc = "Close current split" })
 
 -- toogle linebreak
-keymap('n', '<A-b>', ':set wrap! linebreak!<CR>', opts)
+keymap("n", "<A-b>", ":set wrap! linebreak!<CR>", opts)
 
 -- buffer nav
-keymap('n', '<S-Tab>', ':bprevious<CR>', opts)
-
+keymap("n", "<S-Tab>", ":bprevious<CR>", opts)
+keymap("n", "<leader>q", ":bprevious | bd #<CR>", opts)
+keymap("n", "<leader>n", ":enew<CR>", opts)
