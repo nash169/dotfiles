@@ -67,11 +67,15 @@ static const Layout layouts[] = {
 
 /* key definitions */
 #define MODKEY Mod4Mask
-#define TAGKEYS(KEY, TAG) \
-    {MODKEY, KEY, view, {.ui = 1 << TAG}}, // move across different workspaces
-{MODKEY | ControlMask, KEY, toggleview, {.ui = 1 << TAG}}, // visualize one workspace into another workspaces
-    {MODKEY | ShiftMask, KEY, tag, {.ui = 1 << TAG}}, // move window in another workspace
-    {MODKEY | ControlMask | ShiftMask, KEY, toggletag, {.ui = 1 << TAG}}, // duplicate one window across multiple workspaces
+#define TAGKEYS(KEY,TAG) \
+	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
+	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
+	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
+	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
+// move across different workspaces
+// visualize one workspace into another workspaces
+// move window in another workspace
+// duplicate one window across multiple workspaces
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd)                                          \
@@ -79,10 +83,13 @@ static const Layout layouts[] = {
         .v = (const char*[]) { "/bin/sh", "-c", cmd, NULL } \
     }
 
-    /* commands */
-    static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
+/* commands */
+static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char* dmenucmd[] = {"dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", bg, "-nf", fg, "-sb", rhl, "-sf", hl, NULL};
+static const char* passmenucmd[] = {"passmenu", "-fn", dmenufont, "-nb", bg, "-nf", fg, "-sb", rhl, "-sf", hl, NULL};
 static const char* termcmd[] = {"st", NULL};
+static const char* lfcmd[] = {"st", "-e", "lfrun", NULL};
+static const char* neomuttcmd[] = {"st", "-e", "neomutt", NULL};
 
 /* monitor brightness */
 static const char* mon_light_up[] = {"xbacklight", "-inc", "10", NULL};
@@ -102,88 +109,67 @@ static const char* kbd_light_up[] = {"brightnessctl", "--device=smc::kbd_backlig
 static const char* kbd_light_down[] = {"brightnessctl", "--device=smc::kbd_backlight", "set", "10%-", NULL};
 
 static const Key keys[] = {
-    /* modifier                     key        function        argument */
-    /*--------------------------------------------------------------*/
-    // open dmenu bar
-    {MODKEY, XK_space, spawn, {.v = dmenucmd}},
-    // open terminal
-    {MODKEY, XK_Return, spawn, {.v = termcmd}},
-    // open file explorer
-    {MODKEY, XK_e, spawn, {.v = (const char*[]){"st", "-e", "lfrun", NULL}}},
-    // open email client
-    {MODKEY, XK_n, spawn, {.v = (const char*[]){"st", "-e", "neomutt", NULL}}},
-    // close window
-    {MODKEY, XK_q, killclient, {0}},
-    // standard stack layout
-    {MODKEY, XK_t, setlayout, {.v = &layouts[0]}},
-    // focus on particular window
-    {MODKEY, XK_m, setlayout, {.v = &layouts[2]}},
-    // all windows floating
-    {MODKEY, XK_f, setlayout, {.v = &layouts[1]}},
-    // promote to master
-    {MODKEY | ShiftMask, XK_Return, zoom, {0}},
-    // enter/exit floating mode for a single window
-    {MODKEY | ShiftMask, XK_f, togglefloating, {0}},
-    // move focus across windows
-    {MODKEY, XK_j, focusstack, {.i = +1}},
-    {MODKEY, XK_k, focusstack, {.i = -1}},
-    // rotate stack
-    {MODKEY, XK_r, rotatestack, {.i = -1}},
-    // hide/show status bar
-    {MODKEY, XK_b, togglebar, {0}},
-    // active window followig across workspaces
-    {MODKEY | ShiftMask, XK_0, tag, {.ui = ~0}},
-    // resize layout horizontally
-    {MODKEY, XK_h, setmfact, {.f = -0.05}},
-    {MODKEY, XK_l, setmfact, {.f = +0.05}},
-    // move across the last pair of workspaces
-    {MODKEY, XK_Tab, view, {0}},
-    // increase/decrease number of windows in master
-    {MODKEY, XK_i, incnmaster, {.i = +1}},
-    {MODKEY, XK_d, incnmaster, {.i = -1}},
-    // all windows in one workspace
-    {MODKEY, XK_0, view, {.ui = ~0}},
-    // multi screen options
-    {MODKEY, XK_comma, focusmon, {.i = -1}},
-    {MODKEY, XK_period, focusmon, {.i = +1}},
-    {MODKEY | ShiftMask, XK_comma, tagmon, {.i = -1}},
-    {MODKEY | ShiftMask, XK_period, tagmon, {.i = +1}},
-    /*--------------------------------------------------------------*/
-    {0, XF86XK_MonBrightnessUp, spawn, {.v = mon_light_up}},
-    {0, XF86XK_MonBrightnessDown, spawn, {.v = mon_light_down}},
-    {0, XF86XK_KbdBrightnessUp, spawn, {.v = kbd_light_up}},
-    {0, XF86XK_KbdBrightnessDown, spawn, {.v = kbd_light_down}},
-    {0, XF86XK_AudioRaiseVolume, spawn, {.v = audio_up}},
-    {0, XF86XK_AudioLowerVolume, spawn, {.v = audio_down}},
-    {0, XF86XK_AudioMute, spawn, {.v = audio_mute}},
-    {0, XF86XK_AudioPlay, spawn, {.v = audio_play}},
-    {0, XF86XK_AudioStop, spawn, {.v = audio_stop}},
-    {0, XF86XK_AudioNext, spawn, {.v = audio_next}},
-    {0, XF86XK_AudioPrev, spawn, {.v = audio_prev}},
-    TAGKEYS(XK_1, 0)
-        TAGKEYS(XK_2, 1)
-            TAGKEYS(XK_3, 2)
-                TAGKEYS(XK_4, 3)
-                    TAGKEYS(XK_5, 4)
-                        TAGKEYS(XK_6, 5)
-                            TAGKEYS(XK_7, 6)
-                                TAGKEYS(XK_8, 7)
-                                    TAGKEYS(XK_9, 8){MODKEY | ShiftMask, XK_q, quit, {0}},
+	/* modifier                     key         function        argument */
+        { MODKEY,                       XK_space,                   spawn,          { .v = dmenucmd } },            // open dmenu bar
+        { MODKEY,                       XK_Return,                  spawn,          { .v = termcmd } },             // open terminal
+        { MODKEY,                       XK_p,                       spawn,          { .v = passmenucmd } },         // open passmenu bar
+        { MODKEY,                       XK_e,                       spawn,          { .v = lfcmd } },               // open file explorer
+        { MODKEY,                       XK_n,                       spawn,          { .v = neomuttcmd } },          // open email client
+        { MODKEY,                       XK_q,                       killclient,     { 0 } },                        // close window
+        { MODKEY,                       XK_t,                       setlayout,      { .v = &layouts[0] } },         // standard stack layout
+        { MODKEY,                       XK_m,                       setlayout,      { .v = &layouts[2] } },         // focus on particular window
+        { MODKEY,                       XK_f,                       setlayout,      { .v = &layouts[1] } },         // all windows floating
+        { MODKEY | ShiftMask,           XK_Return,                  zoom,           { 0 } },                        // promote to master
+        { MODKEY | ShiftMask,           XK_f,                       togglefloating, { 0 } },                        // enter/exit floating mode for a single window
+        { MODKEY,                       XK_j,                       focusstack,     { .i = +1 } },                  // move focus to next window
+        { MODKEY,                       XK_k,                       focusstack,     { .i = -1 } },                  // move focus to previous window
+        { MODKEY,                       XK_r,                       rotatestack,    { .i = -1 } },                  // rotate stack
+        { MODKEY | ShiftMask,           XK_0,                       tag,            { .ui = ~0 } },                 // active window followig across workspaces
+        { MODKEY,                       XK_h,                       setmfact,       { .f = -0.05 } },               // resize layout horizontally
+        { MODKEY,                       XK_l,                       setmfact,       { .f = +0.05 } },
+        { MODKEY,                       XK_i,                       incnmaster,     { .i = +1 } },                  // increase number of windows in master
+        { MODKEY,                       XK_d,                       incnmaster,     { .i = -1 } },                  // decrease number of windows in master
+        { MODKEY,                       XK_0,                       view,           { .ui = ~0 } },                 // all windows in one workspace
+        { MODKEY,                       XK_comma,                   focusmon,       { .i = -1 } },                  // multi screen options
+        { MODKEY,                       XK_period,                  focusmon,       { .i = +1 } },
+        { MODKEY | ShiftMask,           XK_comma,                   tagmon,         { .i = -1 } },
+        { MODKEY | ShiftMask,           XK_period,                  tagmon,         { .i = +1 } },
+        { 0,                            XF86XK_MonBrightnessUp,     spawn,          { .v = mon_light_up } },
+        { 0,                            XF86XK_MonBrightnessDown,   spawn,          { .v = mon_light_down } },
+        { 0,                            XF86XK_KbdBrightnessUp,     spawn,          { .v = kbd_light_up } },
+        { 0,                            XF86XK_KbdBrightnessDown,   spawn,          { .v = kbd_light_down } },
+        { 0,                            XF86XK_AudioRaiseVolume,    spawn,          { .v = audio_up } },
+        { 0,                            XF86XK_AudioLowerVolume,    spawn,          { .v = audio_down } },
+        { 0,                            XF86XK_AudioMute,           spawn,          { .v = audio_mute } },
+        { 0,                            XF86XK_AudioPlay,           spawn,          { .v = audio_play } },
+        { 0,                            XF86XK_AudioStop,           spawn,          { .v = audio_stop } },
+        { 0,                            XF86XK_AudioNext,           spawn,          { .v = audio_next } },
+        { 0,                            XF86XK_AudioPrev,           spawn,          { .v = audio_prev } },
+        TAGKEYS(                        XK_1,                                       0)
+        TAGKEYS(                        XK_2,                                       1)
+        TAGKEYS(                        XK_3,                                       2)
+        TAGKEYS(                        XK_4,                                       3)
+        TAGKEYS(                        XK_5,                                       4)
+        TAGKEYS(                        XK_6,                                       5)
+        TAGKEYS(                        XK_7,                                       6)
+        TAGKEYS(                        XK_8,                                       7)
+        TAGKEYS(                        XK_9,                                       8)
+        { MODKEY | ShiftMask,           XK_q,                       quit,           { 0 } },
 };
 
 /* button definitions */
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
-    /* click                event mask      button          function        argument */
-    {ClkLtSymbol, 0, Button1, setlayout, {0}},
-    {ClkLtSymbol, 0, Button3, setlayout, {.v = &layouts[2]}},
-    {ClkWinTitle, 0, Button2, zoom, {0}},
-    {ClkStatusText, 0, Button2, spawn, {.v = termcmd}},
-    {ClkClientWin, MODKEY, Button1, movemouse, {0}},
-    {ClkClientWin, MODKEY, Button2, togglefloating, {0}},
-    {ClkClientWin, MODKEY, Button3, resizemouse, {0}},
-    {ClkTagBar, 0, Button1, view, {0}},
-    {ClkTagBar, 0, Button3, toggleview, {0}},
-    {ClkTagBar, MODKEY, Button1, tag, {0}},
-    {ClkTagBar, MODKEY, Button3, toggletag, {0}},
+	/* click                event mask      button          function        argument */
+	{ ClkLtSymbol,          0,              Button1,        setlayout,      { 0 } },
+        { ClkLtSymbol,          0,              Button3,        setlayout,      { .v = &layouts[2] } },
+        { ClkWinTitle,          0,              Button2,        zoom,           { 0 } },
+        { ClkStatusText,        0,              Button2,        spawn,          { .v = termcmd } },
+        { ClkClientWin,         MODKEY,         Button1,        movemouse,      { 0 } },
+        { ClkClientWin,         MODKEY,         Button2,        togglefloating, { 0 } },
+        { ClkClientWin,         MODKEY,         Button3,        resizemouse,    { 0 } },
+        { ClkTagBar,            0,              Button1,        view,           { 0 } },
+        { ClkTagBar,            0,              Button3,        toggleview,     { 0 } },
+        { ClkTagBar,            MODKEY,         Button1,        tag,            { 0 } },
+        { ClkTagBar,            MODKEY,         Button3,        toggletag,      { 0 } },
 };
