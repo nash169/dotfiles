@@ -17,6 +17,9 @@ fi
 # status bar
 dwmstatus 2>&1 >/dev/null &
 
+# screen locker
+xautolock -time 5 -locker slock &
+
 # display manager
 exec dwm
 

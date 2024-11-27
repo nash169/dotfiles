@@ -3,7 +3,6 @@ This repository contains my dotfiles.
 
 ## ToDo list
 - add image visualization in nvim explorer
-- add slock
 - zsh not working properly in vim mode
     - https://github.com/LukeSmithxyz/voidrice/blob/master/.config/zsh/.zshrc
 - install and configure syncthing

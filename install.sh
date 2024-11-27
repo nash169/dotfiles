@@ -229,7 +229,7 @@ desktop() {
     whiptail --title "Desktop" --yesno "Install Desktop?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
-    desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu maim)
+    desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu maim xautolock)
     # xcompmgr	-> terminal transparency
     # feh	-> set desktop background
     # slock	-> lock screen
@@ -245,7 +245,6 @@ desktop() {
     sudo -u $NAME git -C $REPODIR/dwm checkout custom
     # sudo -u $NAME git -C $REPODIR/dwm rebase upstream/master
 
-
     if [ -d "$REPODIR/dotfiles" ]; then
         cd $REPODIR/dotfiles && sudo -u $NAME stow walls -t /home/$NAME 
         cd $REPODIR/dotfiles && sudo -u $NAME stow xserver -t /home/$NAME 
@@ -259,6 +258,23 @@ desktop() {
     # sudo -u $NAME git -C $REPODIR/dwmstatus fetch upstream
     # sudo -u $NAME git -C $REPODIR/dwmstatus rebase upstream/master
     cd $REPODIR/dwmstatus && make install
+
+    cat > /etc/systemd/system/slock@.service <<EOF
+[Unit]
+Description=Lock X session using slock for user %i
+Before=sleep.target
+
+[Service]
+User=%i
+Environment=DISPLAY=:0
+ExecStartPre=/usr/bin/xset dpms force suspend
+ExecStart=/usr/bin/slock
+
+[Install]
+WantedBy=sleep.target
+    EOF 
+
+    systemctl enable slock@$NAME.service
 }
 
 terminal() {
@@ -386,11 +402,19 @@ EOF
     unset EMAILID IMAPSERVER SMTPSERVER GPGPUBLIC EMAILPASS GPGPASS
 }
 
+tools() {
+    whiptail --title "Install basic tools?" --yesno "Media" 8 78 || return
+    username || error "Could not get username."
+
+    tools=(xclip fd qrencode yt-dlp)
+    pkginstall $NAME ${tools[@]} || error "Could not install TOOLS packages."
+}
+
 mediatools() {
     whiptail --title "Install media tools?" --yesno "Media" 8 78 || return
     username || error "Could not get username."
 
-    mediatools=(sxiv mpd mpc mpv zathura zathura-pdf-mupdf zotero)
+    mediatools=(nsxiv mpd mpc mpv zathura zathura-pdf-mupdf zotero)
     pkginstall $NAME ${mediatools[@]} || error "Could not install MEDIA TOOLS packages."
 }
 
