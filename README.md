@@ -10,19 +10,19 @@ This repository contains my dotfiles.
 - set correct lynting opts for python
 - increase mouse speed for laptop
 - three fingers drag
-- autosync emails
-    - https://github.com/LukeSmithxyz/mutt-wizard
-    - https://github.com/cruegge/pam-gnupg
-    - https://github.com/cronie-crond/cronie
 - configure bluetooth headset
 - dropdown terminal
     - https://dwm.suckless.org/patches/scratchpad/
 - mount external drives
-- add lf option to create/delete files/folders
 - dynamic control gaps spacing
-- international us keyboard
-- videos download shortcuts
-    - https://github.com/yt-dlp/yt-dlp
+- passmenu with opt support
+- shortcuts for maim
+- aliases/shortcuts/scripts for yt-dlp
+- shortcuts for gpg
+- shortcut for wireguard and mount smb
+- change default down folder for Firefox (ask always where to save the files on)
+- change default explorer firefox
+- create script to auto add your hosts
 
 ## useful links
 - https://medium.com/@schtoeffel/you-don-t-need-more-than-one-cursor-in-vim-2c44117d51db
