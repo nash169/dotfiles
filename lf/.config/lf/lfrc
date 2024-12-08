@@ -132,6 +132,7 @@ cmd bulkrename ${{
 
     rm -f "$tmpfile_old" "$tmpfile_new"
     lf -remote "send $id unselect"
+    lf -remote "send reload"
 }}
 map R bulkrename
 
@@ -146,7 +147,7 @@ cmd mountcifs ${{
         read -p "pass: " -s pass
         echo ""
         sudo mount --mkdir -t cifs //$host/$folder $fx -o username=$user,password=$pass,uid=$(id -u),gid=$(id -g)
-        reload
+        lf -remote "send reload"
     fi
 }}
 
@@ -157,7 +158,8 @@ cmd umountcifs ${{
     if [ "${ans}" == "y" ] || [ "${ans}" == "Y" ]; then
         sudo umount $fx
     fi
+    lf -remote "send reload"
 }}
 
-map <c-m> mountcifs
-map <c-u> umountcifs
+map s mountcifs
+map S umountcifs
