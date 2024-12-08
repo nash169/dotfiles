@@ -52,7 +52,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- buffer
 map("<Tab>", ":bnext<CR>", "Move to next buffer")
 map("<S-Tab>", ":bprevious<CR>", "Move to previous buffer")
-map("<leader>qb", ":bprevious | bd #<CR>", "[Q]uit [B]uffer")
+map("<leader>bq", ":bprevious | bd #<CR>", "[B]uffer [Q]uit")
 map("<leader>nb", ":enew<CR>", "[N]ew [B]uffer")
 
 -- toogle linebreak
