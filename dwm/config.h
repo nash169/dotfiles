@@ -90,6 +90,8 @@ static const char* passmenucmd[] = {"passmenu", "-fn", dmenufont, "-nb", bg, "-n
 static const char* termcmd[] = {"st", NULL};
 static const char* lfcmd[] = {"st", "-e", "lfrun", NULL};
 static const char* neomuttcmd[] = {"st", "-e", "neomutt", NULL};
+static const char scratchpadname[] = "scratchpad";
+static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "120x34", NULL };
 
 /* monitor brightness */
 static const char* mon_light_up[] = {"xbacklight", "-inc", "10", NULL};
@@ -109,9 +111,10 @@ static const char* kbd_light_up[] = {"brightnessctl", "--device=smc::kbd_backlig
 static const char* kbd_light_down[] = {"brightnessctl", "--device=smc::kbd_backlight", "set", "10%-", NULL};
 
 static const Key keys[] = {
-	/* modifier                     key         function        argument */
+	/* modifier                     key                         function        argument */
         { MODKEY,                       XK_space,                   spawn,          { .v = dmenucmd } },            // open dmenu bar
         { MODKEY,                       XK_Return,                  spawn,          { .v = termcmd } },             // open terminal
+	{ MODKEY,                       XK_s,                       togglescratch,  { .v = scratchpadcmd } },       // open scratchpad
         { MODKEY,                       XK_p,                       spawn,          { .v = passmenucmd } },         // open passmenu bar
         { MODKEY,                       XK_e,                       spawn,          { .v = lfcmd } },               // open file explorer
         { MODKEY,                       XK_n,                       spawn,          { .v = neomuttcmd } },          // open email client
