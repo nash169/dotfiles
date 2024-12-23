@@ -11,8 +11,6 @@ This repository contains my dotfiles.
 - increase mouse speed for laptop
 - three fingers drag
 - configure bluetooth headset
-- dropdown terminal
-    - https://dwm.suckless.org/patches/scratchpad/
 - mount external drives
 - dynamic control gaps spacing
 - passmenu with opt support
