@@ -86,3 +86,12 @@ vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
+
+-- setup diagnostic behavior
+vim.diagnostic.config({
+	virtual_text = false, -- Disable inline diagnostics
+	signs = true, -- Keep signs in the sign column
+	update_in_insert = false, -- Do not update diagnostics in insert mode
+	underline = true, -- Underline problematic text
+	severity_sort = true, -- Sort diagnostics by severity
+})

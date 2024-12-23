@@ -53,7 +53,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 map("<Tab>", ":bnext<CR>", "Move to next buffer")
 map("<S-Tab>", ":bprevious<CR>", "Move to previous buffer")
 map("<leader>bq", ":bprevious | bd #<CR>", "[B]uffer [Q]uit")
-map("<leader>nb", ":enew<CR>", "[N]ew [B]uffer")
+map("<leader>bn", ":enew<CR>", "[B]uffer [N]ew")
 
 -- toogle linebreak
 map("<leader>lb", ":set wrap! linebreak!<CR>", "[L]ine [B]reak")
@@ -87,3 +87,5 @@ map("<", "<gv", "Remove indentation in visual mode", "v")
 -- map("<S-CR>", "O<Esc>", "Add blank line above", "n")
 vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>k")
 vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>j")
+
+vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostics in a floating window" })
