@@ -2,6 +2,7 @@
 This repository contains my dotfiles.
 
 ## ToDo list
+- add auto unlock gpg for slock
 - add image visualization in nvim explorer
 - zsh not working properly in vim mode
     - https://github.com/LukeSmithxyz/voidrice/blob/master/.config/zsh/.zshrc
@@ -18,8 +19,6 @@ This repository contains my dotfiles.
 - aliases/shortcuts/scripts for yt-dlp
 - shortcuts for gpg
 - shortcut for wireguard and mount smb
-- change default down folder for Firefox (ask always where to save the files on)
-- change default explorer firefox
 - create script to auto add your hosts
 
 ## useful links
