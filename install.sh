@@ -257,24 +257,24 @@ desktop() {
     sudo -u $NAME git -C $REPODIR/dwmstatus remote add upstream git://git.suckless.org/dwmstatus 
     # sudo -u $NAME git -C $REPODIR/dwmstatus fetch upstream
     # sudo -u $NAME git -C $REPODIR/dwmstatus rebase upstream/master
-    cd $REPODIR/dwmstatus && make install
+    cd "$REPODIR/dwmstatus" && make install
 
-    cat > /etc/systemd/system/slock@.service <<EOF
-[Unit]
-Description=Lock X session using slock for user %i
-Before=sleep.target
+cat >/etc/systemd/system/slock@.service <<EOF
+    [Unit]
+    Description=Lock X session using slock for user %i
+    Before=sleep.target
 
-[Service]
-User=%i
-Environment=DISPLAY=:0
-ExecStartPre=/usr/bin/xset dpms force suspend
-ExecStart=/usr/bin/slock
+    [Service]
+    User=%i
+    Environment=DISPLAY=:0
+    ExecStartPre=/usr/bin/xset dpms force suspend
+    ExecStart=/usr/bin/slock
 
-[Install]
-WantedBy=sleep.target
-    EOF 
+    [Install]
+    WantedBy=sleep.target
+EOF
 
-    systemctl enable slock@$NAME.service
+    systemctl enable "slock@$NAME.service"
 }
 
 terminal() {
@@ -351,17 +351,24 @@ browser() {
 
     # PROFILEDIR=$(find /home/$NAME/.mozilla/firefox/ -type d -name ".*$PROFILENAME")
     PROFILEDIR=/home/$NAME/.mozilla/firefox/$(sed -n "/Path=.*.$PROFILENAME/ s/.*=//p" "/home/$NAME/.mozilla/firefox/profiles.ini")
-    
-    sudo -u $NAME git clone https://github.com/arkenfox/user.js.git $REPODIR/user.js 
-    sudo -u $NAME ln -s "$REPODIR/dotfiles/browser/user-overrides.js" "$PROFILEDIR/user-overrides.js"
-    sudo -u $NAME cp $REPODIR/user.js/updater.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh updater.sh <<< $'Y'
-    sudo -u $NAME cp $REPODIR/user.js/prefsCleaner.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh prefsCleaner.sh <<< $'1'
 
-    addons=(ublock-origin) # decentraleyes istilldontcareaboutcookies vim-vixen
+    whiptail --title "Browser" --yesno "Install Arkenfox?" 8 78 && {
+        sudo -u $NAME git clone https://github.com/arkenfox/user.js.git $REPODIR/user.js 
+        sudo -u $NAME ln -s "$REPODIR/dotfiles/browser/user-overrides.js" "$PROFILEDIR/user-overrides.js"
+        sudo -u $NAME cp $REPODIR/user.js/updater.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh updater.sh <<< $'Y'
+        sudo -u $NAME cp $REPODIR/user.js/prefsCleaner.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh prefsCleaner.sh <<< $'1'
+    } 
+
+    ADDONS=$(whiptail --title "Firefox extensions" --separate-output --checklist "Choose extensions" 25 52 16 \
+        "ublock-origin" "" OFF \
+        "cookies.txt" "" OFF \
+        "istilldontcareaboutcookies" "" OFF \
+        "auth-helper" "" OFF 3>&1 1>&2 2>&3) || return
+    # decentraleyes vim-vixen
     sudo -u "$username" mkdir -p "$PROFILEDIR/extensions/"
-    
-    for addon in ${addons[@]}; do
-        addonurl="$(curl --silent "https://addons.mozilla.org/en-US/firefox/addon/${addon}/" | grep -o 'https://addons.mozilla.org/firefox/downloads/file/[^"]*')"
+
+    for ADDON in $ADDONS; do
+        addonurl="$(curl --silent "https://addons.mozilla.org/en-US/firefox/addon/${ADDON}/" | grep -o 'https://addons.mozilla.org/firefox/downloads/file/[^"]*')"
         file="${addonurl##*/}"
         sudo -u $NAME curl -L -o "/tmp/$file" "$addonurl"
         id="$(sudo -u $NAME unzip -p "/tmp/$file" manifest.json | grep "\"id\"")"
@@ -369,6 +376,8 @@ browser() {
         id="${id##*\"}"
         sudo -u $NAME mv "/tmp/$file" "$PROFILEDIR/extensions/$id.xpi"
     done
+
+    # Settings -> Privacy and Security -> Cookies and Site Data -> Manage Exceptions
 
     sudo -u $NAME pkill firefox
 }
@@ -388,7 +397,7 @@ email() {
     EMAILPASS=$(whiptail --title "Email Client" --passwordbox "Enter password" 8 78 3>&1 1>&2 2>&3) || return
     GPGPUBLIC=$(whiptail --title "Email Client" --inputbox "Insert GPG public" 8 78 3>&1 1>&2 2>&3) || return
     GPGPASS=$(whiptail --title "Email Client" --passwordbox "Enter GPG passphrase" 8 78 3>&1 1>&2 2>&3) || return
-    
+
     sudo -u $NAME pass init $GPGPUBLIC
 
     sudo -u $NAME mw -a $EMAILID <<EOF
@@ -406,8 +415,8 @@ tools() {
     whiptail --title "Install basic tools?" --yesno "Media" 8 78 || return
     username || error "Could not get username."
 
-    tools=(xclip fd qrencode yt-dlp)
-    pkginstall $NAME ${tools[@]} || error "Could not install TOOLS packages."
+    TOOLS=(xclip fd qrencode yt-dlp)
+    pkginstall "$NAME" "${TOOLS[@]}" || error "Could not install TOOLS packages."
 }
 
 mediatools() {
@@ -434,34 +443,23 @@ devtools() {
     pkginstall $NAME ${devtools[@]} || error "Could not install DEVELOPMENT TOOLS packages."
 }
 
-# basicutils || error "User exit"
-
-# adduser || error "User exit"
-
-# aurhelper || error "User exit"
-
-# desktop || error "User exit"
-
-# terminal || error "User exit"
-
-# shell|| error "User exit"
-
-# explorer || error "User exit"
-
-# editor || error "User exit"
-
-# email || error "User exit"
-
-browser || error "User exit"
-
-# mediatools || error "User exit"
-
-# downtools || error "User exit"
-
-# devtools || error "User exit"
-
-
 # sshgithub() {
 #     github=(github-cli)
 #     pkginstall $NAME ${github[@]} || error "Could not install GTIHUB packages."
 # }
+
+if [ "${1}" != "--source" ]; then
+    basicutils || error "User exit"
+    adduser || error "User exit"
+    aurhelper || error "User exit"
+    desktop || error "User exit"
+    terminal || error "User exit"
+    shell|| error "User exit"
+    explorer || error "User exit"
+    editor || error "User exit"
+    email || error "User exit"
+    browser || error "User exit"
+    mediatools || error "User exit"
+    downtools || error "User exit"
+    devtools || error "User exit"
+fi
