@@ -9,15 +9,11 @@ This repository contains my dotfiles.
 - install and configure syncthing
 - pyright not working
 - set correct lynting opts for python
-- increase mouse speed for laptop
 - three fingers drag
 - configure bluetooth headset
 - mount external drives
 - dynamic control gaps spacing
 - passmenu with opt support
-- shortcuts for maim
-- aliases/shortcuts/scripts for yt-dlp
-- shortcuts for gpg
 - shortcut for wireguard and mount smb
 - create script to auto add your hosts
 
