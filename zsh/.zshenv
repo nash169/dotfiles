@@ -25,3 +25,7 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # zsh config
 export ZDOTDIR="$HOME/.config/zsh"
+
+# gpg agent
+GPG_TTY=`tty`
+export GPG_TTY

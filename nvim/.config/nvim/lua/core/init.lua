@@ -51,6 +51,8 @@ require("lazy").setup({
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = { signs = false },
 	},
+	-- gnupg edit
+	{ "jamessan/vim-gnupg", config = function() end },
 	-- symbols autopair
 	{ "windwp/nvim-autopairs", event = "InsertEnter", config = true },
 	-- comment text
