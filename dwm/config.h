@@ -92,6 +92,7 @@ static const char* lfcmd[] = {"st", "-e", "lfrun", NULL};
 static const char* neomuttcmd[] = {"st", "-e", "neomutt", NULL};
 static const char scratchpadname[] = "scratchpad";
 static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "120x34", NULL };
+static const char *screenshootcmd[] = {"/bin/sh", "-c", "screenshoot", NULL};
 
 /* monitor brightness */
 static const char* mon_light_up[] = {"xbacklight", "-inc", "10", NULL};
@@ -118,6 +119,7 @@ static const Key keys[] = {
         { MODKEY,                       XK_p,                       spawn,          { .v = passmenucmd } },         // open passmenu bar
         { MODKEY,                       XK_e,                       spawn,          { .v = lfcmd } },               // open file explorer
         { MODKEY,                       XK_n,                       spawn,          { .v = neomuttcmd } },          // open email client
+        { MODKEY,                       XK_w,                       spawn,          { .v = screenshootcmd } },      // take screenshoot 
         { MODKEY,                       XK_q,                       killclient,     { 0 } },                        // close window
         { MODKEY,                       XK_t,                       setlayout,      { .v = &layouts[0] } },         // standard stack layout
         { MODKEY,                       XK_m,                       setlayout,      { .v = &layouts[2] } },         // focus on particular window
@@ -163,16 +165,16 @@ static const Key keys[] = {
 /* button definitions */
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
-	/* click                event mask      button          function        argument */
-	{ ClkLtSymbol,          0,              Button1,        setlayout,      { 0 } },
-        { ClkLtSymbol,          0,              Button3,        setlayout,      { .v = &layouts[2] } },
-        { ClkWinTitle,          0,              Button2,        zoom,           { 0 } },
-        { ClkStatusText,        0,              Button2,        spawn,          { .v = termcmd } },
-        { ClkClientWin,         MODKEY,         Button1,        movemouse,      { 0 } },
-        { ClkClientWin,         MODKEY,         Button2,        togglefloating, { 0 } },
-        { ClkClientWin,         MODKEY,         Button3,        resizemouse,    { 0 } },
-        { ClkTagBar,            0,              Button1,        view,           { 0 } },
-        { ClkTagBar,            0,              Button3,        toggleview,     { 0 } },
-        { ClkTagBar,            MODKEY,         Button1,        tag,            { 0 } },
-        { ClkTagBar,            MODKEY,         Button3,        toggletag,      { 0 } },
+	/* click                event mask                  button          function        argument */
+	{ ClkLtSymbol,          0,                          Button1,        setlayout,      { 0 } },
+        { ClkLtSymbol,          0,                          Button3,        setlayout,      { .v = &layouts[2] } },
+        { ClkWinTitle,          0,                          Button2,        zoom,           { 0 } },
+        { ClkStatusText,        0,                          Button2,        spawn,          { .v = termcmd } },
+        { ClkClientWin,         MODKEY,                     Button1,        movemouse,      { 0 } },
+        { ClkClientWin,         MODKEY,                     Button2,        togglefloating, { 0 } },
+        { ClkClientWin,         MODKEY | ShiftMask,         Button1,        resizemouse,    { 0 } },
+        { ClkTagBar,            0,                          Button1,        view,           { 0 } },
+        { ClkTagBar,            0,                          Button3,        toggleview,     { 0 } },
+        { ClkTagBar,            MODKEY,                     Button1,        tag,            { 0 } },
+        { ClkTagBar,            MODKEY,                     Button3,        toggletag,      { 0 } },
 };
