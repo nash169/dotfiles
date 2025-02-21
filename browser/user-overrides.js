@@ -18,3 +18,5 @@ user_pref("identity.fxaccounts.enabled", false);
 // do no ask to save passwords
 
 // import bookmarks
+
+user_pref("browser.download.always_ask_before_handling_new_types", false);
