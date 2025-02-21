@@ -1,22 +1,85 @@
 #!/bin/sh
 
+# generate ssh key pair
 sshgen() {
     ssh-keygen -t ed25519 -C "${1}"
 }
 
+# push using a specific key
 gitssh() {
     COMMAND="ssh -i ~/.ssh/${1}_ed25519 -o IdentitiesOnly=yes"
     shift
-    GIT_SSH_COMMAND=$COMMAND git $@
+    GIT_SSH_COMMAND="$COMMAND" git "$@"
 }
 
-function zsh_add_file() {
+# gpg list keys
+gpg_list() {
+    gpg --list-secret-keys --keyid-format LONG --with-subkey-fingerprint
+}
+
+# gpg edit key
+gpg_edit() {
+    gpg --edit-key "$1"
+}
+
+# gpg export public key (ascii armored output)
+gpg_export_public() {
+    [ -z ${1+x} ] && { echo "key is unset"; exit 1; }
+    [ -z ${2+x} ] && { set 2 "private.png"; }
+
+    gpg --export -a "$1"! | qrencode -o "$2"
+}
+
+# gpg export public key (ascii armored output)
+gpg_export_private() {
+    [ -z ${1+x} ] && { echo "key is unset"; exit 1; }
+    [ -z ${2+x} ] && { set 2 "private.png"; }
+
+    gpg --export-secret-subkeys -a "$1"! | qrencode -o "$2"
+}
+
+# vpn
+# for this and the other function link to shortcuts that open a floating terminal with whiptail
+# vpn_on() {
+#     DIR="/etc/wireguard"
+#     wg_configs=()
+#
+#     for file in "$DIR"/*; do
+#         if [[ -f "$file" ]]; then
+#             wg_configs+=("$(basename "$file" | sed 's/\.[^.]*$//')")
+#         fi
+#     done
+#     whiptail --title "Operations" --checklist "Select Operation" 22 80 14 "${wg_configs[@]}"
+# }
+
+# download 
+get_media() {
+    [ -z ${1+x} ] && { echo "source is unset"; exit 1; }
+    if [ -z ${2+x} ]; then
+        yt-dlp "'$1'"
+    else
+        yt-dlp --cookies "$2" "'$1'"
+    fi
+}
+
+# mount
+# mount_usb() {
+#     sudo mount /dev/sdd1 ~/mnt -o uid=$(id -u),gid=$(id -g)
+# }
+
+# scan qr code
+scan_qr() {
+    [ -z ${1+x} ] && { echo "source is unset"; return 1; }
+    zbarimg -q "$1"
+}
+
+zsh_add_file() {
     [ -f "$ZDOTDIR/$1" ] && source "$ZDOTDIR/$1"
 }
 
-function zsh_add_plugin() {
+zsh_add_plugin() {
     PLUGIN_NAME=${1##*/}
-    [[ -d $ZDOTDIR/plugins ]] || mkdir "$ZDOTDIR/plugins"
+    [ -d "$ZDOTDIR/plugins" ] || mkdir "$ZDOTDIR/plugins"
     if [ -d "$ZDOTDIR/plugins/$PLUGIN_NAME" ]; then
         zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.plugin.zsh" || \
         zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.zsh"
