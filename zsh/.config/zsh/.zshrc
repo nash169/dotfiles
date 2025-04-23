@@ -69,3 +69,8 @@ source "$ZDOTDIR/functions"
 # plugins
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
+
+# homebrew
+if [[ "$OSTYPE" == "darwin"* ]]; then # "linux-gnu"*
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
