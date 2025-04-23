@@ -10,7 +10,11 @@ return {
 		-- syntax enable
 
 		-- Viewer options: One may configure the viewer either by specifying a built-in viewer method:
-		vim.g.vimtex_view_method = "zathura"
+		if vim.loop.os_uname().sysname == "Darwin" then
+			vim.g.vimtex_view_method = "general"
+		else
+			vim.g.vimtex_view_method = "zathura"
+		end
 
 		vim.g.vimtex_compiler_latexmk = {
 			options = {
