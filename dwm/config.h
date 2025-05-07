@@ -45,11 +45,11 @@ static const Rule rules[] = {
      *	WM_CLASS(STRING) = instance, class
      *	WM_NAME(STRING) = title
      */
-    /* class     instance  title           tags mask  isfloating  isterminal  noswallow  monitor */
-    {"Gimp", NULL, NULL, 0, 1, 0, 0, -1},
-    {"Firefox", NULL, NULL, 1 << 8, 0, 0, -1, -1},
-    {"st-256color", NULL, NULL, 0, 0, 1, 0, -1},
-    {NULL, NULL, "Event Tester", 0, 0, 0, 1, -1}, /* xev */
+    /* class            instance    title           tags mask   isfloating  isterminal  noswallow   monitor */
+    {"Gimp",            NULL,       NULL,           0,          1,          0,          0,          -1},
+    {"Firefox",         NULL,       NULL,           1 << 8,     0,          0,          -1,         -1},
+    {"st-256color",     NULL,       NULL,           0,          0,          1,          0,          -1},
+    {NULL,              NULL,       "Event Tester", 0,          0,          0,          1,          -1}, /* xev */
 };
 
 /* layout(s) */
@@ -59,10 +59,10 @@ static const int resizehints = 0; /* 1 means respect size hints in tiled resizal
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
 static const Layout layouts[] = {
-    /* symbol     arrange function */
-    {"[]=", tile}, /* first entry is default */
-    {"><>", NULL}, /* no layout function means floating behavior */
-    {"[M]", monocle},
+    /* symbol       arrange function */
+    {"[]=",         tile}, /* first entry is default */
+    {"><>",         NULL}, /* no layout function means floating behavior */
+    {"[M]",         monocle},
 };
 
 /* key definitions */
