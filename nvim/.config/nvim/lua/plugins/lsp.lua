@@ -199,6 +199,7 @@ return {
 							typeCheckingMode = "basic", -- off, basic, strict
 							useLibraryCodeForTypes = true,
 						},
+						pythonPath = vim.fn.exepath("python3"),
 					},
 				},
 			},
