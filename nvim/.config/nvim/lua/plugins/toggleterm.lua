@@ -3,7 +3,7 @@ return {
 	version = "*",
 	config = function()
 		require("toggleterm").setup({
-			open_mapping = [[<a-;>]],
+			open_mapping = [[<c-;>]],
 			direction = "float",
 			insert_mappings = false, -- whether or not the open mapping applies in insert mode
 		})
@@ -17,6 +17,6 @@ return {
 			lazygit:toggle()
 		end
 
-		vim.keymap.set("n", "<a-'>", _LAZYGIT_TOGGLE, { noremap = true })
+		vim.keymap.set("n", "<c-'>", _LAZYGIT_TOGGLE, { noremap = true })
 	end,
 }
