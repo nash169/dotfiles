@@ -53,8 +53,8 @@ require("lazy").setup({
 	},
 	-- gnupg edit
 	{ "jamessan/vim-gnupg", config = function() end },
-	-- symbols autopair
-	{ "windwp/nvim-autopairs", event = "InsertEnter", config = true },
+	-- -- symbols autopair
+	-- { "windwp/nvim-autopairs", event = "InsertEnter", config = true },
 	-- comment text
 	{ "numToStr/Comment.nvim", lazy = false },
 	-- navigate through vim/tmux windows
