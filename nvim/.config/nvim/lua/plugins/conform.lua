@@ -46,7 +46,7 @@ return { -- Autoformat
 			},
 			formatters = {
 				autopep8 = {
-					prepend_args = { "--max-line-length=150" },
+					prepend_args = { "--max-line-length=150", "--ignore=E731,E402" },
 				},
 			},
 			vim.api.nvim_create_user_command("FormatDisable", function(args)
