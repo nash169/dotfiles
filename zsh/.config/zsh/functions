@@ -1,11 +1,13 @@
 #!/bin/sh
 
 # generate ssh key pair
+# e.g. ssh-keygen <email>
 sshgen() {
     ssh-keygen -t ed25519 -C "${1}"
 }
 
 # push using a specific key
+# e.g. -> gitssh <keyname> push origin main
 gitssh() {
     COMMAND="ssh -i ~/.ssh/${1}_ed25519 -o IdentitiesOnly=yes"
     shift
@@ -13,29 +15,93 @@ gitssh() {
 }
 
 # gpg list keys
-gpg_list() {
+# e.g. gpg-list
+gpg-list() {
     gpg --list-secret-keys --keyid-format LONG --with-subkey-fingerprint
 }
 
 # gpg edit key
-gpg_edit() {
+# e.g. gpg-edit <keyid>
+gpg-edit() {
     gpg --edit-key "$1"
 }
 
-# gpg export public key (ascii armored output)
-gpg_export_public() {
+# gpg export qrcode public key (ascii armored output)
+# e.g. gpg-export-pub <keyid> <path/to/png>
+gpg-export-pub() {
     [ -z ${1+x} ] && { echo "key is unset"; exit 1; }
-    [ -z ${2+x} ] && { set 2 "private.png"; }
+    [ -z ${2+x} ] && { set 2 "key_pub.png"; }
 
     gpg --export -a "$1"! | qrencode -o "$2"
 }
 
-# gpg export public key (ascii armored output)
-gpg_export_private() {
+# gpg export qrcode private (sub)key (ascii armored output)
+# e.g. gpg-export <keyid> <path/to/png>
+gpg-export() {
     [ -z ${1+x} ] && { echo "key is unset"; exit 1; }
-    [ -z ${2+x} ] && { set 2 "private.png"; }
+    [ -z ${2+x} ] && { set 2 "key.png"; }
 
     gpg --export-secret-subkeys -a "$1"! | qrencode -o "$2"
+}
+
+# get from url
+# e.g. get-media <url> <path/to/cookies>
+get-media() {
+    [ -z ${1+x} ] && { echo "source is unset"; exit 1; }
+    if [ -z ${2+x} ]; then
+        yt-dlp "'$1'"
+    else
+        yt-dlp --cookies "$2" "'$1'"
+    fi
+}
+
+# scan qr code
+# e.g. scan-qrcode <path/to/qrcode/png>
+scan-qrcode() {
+    [ -z ${1+x} ] && { echo "source is unset"; return 1; }
+    zbarimg -q "$1"
+} 
+
+# rsync copy
+# e.g. rcp <source> <destination>
+rcp() {
+    [ "$#" -lt 2 ] && { echo "Usage: rcp [rsync options] source destination"; return 1 }
+    local start end elapsed
+
+    start=$(date +%s)
+
+    rsync -ah --info=progress2 "$@"
+    local exit_code=$?
+
+    end=$(date +%s)
+    elapsed=$((end - start))
+
+    # Format and print elapsed time
+    printf "\nTotal time: %02d:%02d:%02d\n" \
+    $((elapsed / 3600)) $((elapsed % 3600 / 60)) $((elapsed % 60))
+
+    return $exit_code
+}
+
+# rsync move
+# e.g. rmv <source> <destination>
+rmv() {
+    [ "$#" -lt 2 ] && { echo "Usage: rmv [rsync options] source destination"; return 1 }
+    local start end elapsed
+
+    start=$(date +%s)
+
+    rsync -ah --info=progress2 --remove-source-files "$@"
+    local exit_code=$?
+
+    end=$(date +%s)
+    elapsed=$((end - start))
+
+    # Format and print elapsed time
+    printf "\nTotal time: %02d:%02d:%02d\n" \
+    $((elapsed / 3600)) $((elapsed % 3600 / 60)) $((elapsed % 60))
+
+    return $exit_code
 }
 
 # vpn
@@ -52,38 +118,7 @@ gpg_export_private() {
 #     whiptail --title "Operations" --checklist "Select Operation" 22 80 14 "${wg_configs[@]}"
 # }
 
-# download 
-get_media() {
-    [ -z ${1+x} ] && { echo "source is unset"; exit 1; }
-    if [ -z ${2+x} ]; then
-        yt-dlp "'$1'"
-    else
-        yt-dlp --cookies "$2" "'$1'"
-    fi
-}
-
 # mount
 # mount_usb() {
 #     sudo mount /dev/sdd1 ~/mnt -o uid=$(id -u),gid=$(id -g)
 # }
-
-# scan qr code
-scan_qr() {
-    [ -z ${1+x} ] && { echo "source is unset"; return 1; }
-    zbarimg -q "$1"
-}
-
-zsh_add_file() {
-    [ -f "$ZDOTDIR/$1" ] && source "$ZDOTDIR/$1"
-}
-
-zsh_add_plugin() {
-    PLUGIN_NAME=${1##*/}
-    [ -d "$ZDOTDIR/plugins" ] || mkdir "$ZDOTDIR/plugins"
-    if [ -d "$ZDOTDIR/plugins/$PLUGIN_NAME" ]; then
-        zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.plugin.zsh" || \
-        zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.zsh"
-    else
-        git clone "https://github.com/$1.git" "$ZDOTDIR/plugins/$PLUGIN_NAME"
-    fi
-}

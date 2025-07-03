@@ -61,14 +61,27 @@ autoload -Uz colors && colors
 [ -f /usr/share/fzf/completion.zsh ] && source /usr/share/fzf/completion.zsh
 [ -f /usr/share/fzf/key-bindings.zsh ] && source /usr/share/fzf/key-bindings.zsh
 
+# plugins
+zsh_add_file() {
+    [ -f "$ZDOTDIR/$1" ] && source "$ZDOTDIR/$1"
+}
+zsh_add_plugin() {
+    PLUGIN_NAME=${1##*/}
+    [ -d "$ZDOTDIR/plugins" ] || mkdir "$ZDOTDIR/plugins"
+    if [ -d "$ZDOTDIR/plugins/$PLUGIN_NAME" ]; then
+        zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.plugin.zsh" || \
+        zsh_add_file "plugins/$PLUGIN_NAME/$PLUGIN_NAME.zsh"
+    else
+        git clone "https://github.com/$1.git" "$ZDOTDIR/plugins/$PLUGIN_NAME"
+    fi
+}
+zsh_add_plugin "zsh-users/zsh-autosuggestions"
+zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
+
 # prompt, aliases and functions
 source "$ZDOTDIR/prompt"
 source "$ZDOTDIR/aliases"
 source "$ZDOTDIR/functions"
-
-# plugins
-zsh_add_plugin "zsh-users/zsh-autosuggestions"
-zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
 
 # homebrew
 if [[ "$OSTYPE" == "darwin"* ]]; then # "linux-gnu"*
