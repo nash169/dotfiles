@@ -65,6 +65,8 @@ map("<leader>nr", ":set relativenumber!<CR>", "[N]umber [R]elative")
 vim.keymap.set("n", "<leader>sv", "<C-w>v", { desc = "[S]plit [V]ertically" })
 vim.keymap.set("n", "<leader>sh", "<C-w>s", { desc = "[S]plit [H]orizontally" })
 vim.keymap.set("n", "<leader>sq", "<cmd>close<CR>", { desc = "[S]plit [Q]uit" })
+vim.keymap.set("n", "<C-,>", ":vertical resize -2<CR>")
+vim.keymap.set("n", "<C-.>", ":vertical resize +2<CR>")
 
 -- move text up and down
 map("<S-j>", ":m .+1<CR>==", "Move line down")
