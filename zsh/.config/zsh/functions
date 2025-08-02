@@ -2,8 +2,17 @@
 
 # generate ssh key pair
 # e.g. ssh-keygen <email>
-sshgen() {
-    ssh-keygen -t ed25519 -C "${1}"
+sshkey-gen() {
+    whiptail --title "SSH Key" --yesno "Generate SSH key?" 8 78 || return
+    username || error "Could not get username."
+    if [ ! -d "/home/$USERNAME/.ssh" ]; then
+        sudo -u $USERNAME mkdir -p "/home/$USERNAME/.ssh"
+    fi
+    EMAIL=$(whiptail --title "SSH Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
+    KEYNAME=$(whiptail --title "SSH Keygen" --inputbox "Enter key's name" 8 78 "id_ed25519" 3>&1 1>&2 2>&3) || return
+    PASSPHRASE=$(whiptail --title "SSH Keygen" --passwordbox "Enter passphrase (empty for no passphrase)" 8 78 3>&1 1>&2 2>&3) || return
+    ssh-keygen -t ed25519 -f /home/$USERNAME/.ssh/$KEYNAME -q -N "$PASSPHRASE" -C $EMAIL
+    unset EMAIL KEYNAME PASSPHRASE
 }
 
 # push using a specific key
