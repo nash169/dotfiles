@@ -26,6 +26,12 @@ export PATH="$HOME/.local/bin:$PATH"
 # zsh config
 export ZDOTDIR="$HOME/.config/zsh"
 
-# gpg agent
-GPG_TTY=`tty`
-export GPG_TTY
+# gpg-agent
+unset SSH_AGENT_PID
+if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
+  export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+fi
+export GPG_TTY=$(tty)
+
+# sudo
+export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
