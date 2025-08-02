@@ -23,3 +23,4 @@ user_pref("browser.download.always_ask_before_handling_new_types", false);
 user_pref("browser.download.dir", "~/downloads");
 
 // cookies exceptions
+// Settings -> Privacy and Security -> Cookies and Site Data -> Manage Exceptions
