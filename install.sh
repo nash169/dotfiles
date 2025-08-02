@@ -1,45 +1,6 @@
 #!/bin/sh
 
-AURHELPER=(
-    yay
-    paru
-)
 
-DESKTOP=(
-    xorg-server
-    xorg-xwininfo
-    xorg-xinit
-    xorg-xprop
-    xorg-xdpyinfo
-    xorg-xbacklight
-    xorg-xrandr
-    xorg-xrdb
-    xorg-xbacklight
-    xcompmgr
-    feh
-    slock
-    dmenu
-    maim
-    xautolock
-)
-
-IOT=(
-    wireguard-tools
-)
-
-
-AUDIO=(
-    pipewire 
-    wireplumber 
-    pipewire-pulse
-)
-
-TOOLS=(
-    htop
-    xclip
-    qrencode
-    lazygit
-)
 
 error() {
     printf "%s\n" "$1" >&2
@@ -165,26 +126,11 @@ font-install() {
     # rm -rf /tmp/file.zip /tmp/fonts
 }
 
-ssh-generate() {
-    whiptail --title "SSH Key" --yesno "Generate SSH key?" 8 78 || return
-    username || error "Could not get username."
-    PKG=(
-        openssh
-    )
-    pkginstall $NAME ${PKG[@]} || error "Could not install SSH packages."
-    if [ ! -d "/home/$NAME/.ssh" ]; then
-        sudo -u $NAME mkdir -p "/home/$NAME/.ssh"
-    fi
-    EMAIL=$(whiptail --title "SSH Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
-    KEYNAME=$(whiptail --title "SSH Keygen" --inputbox "Enter key's name" 8 78 "id_ed25519" 3>&1 1>&2 2>&3) || return
-    PASSPHRASE=$(whiptail --title "SSH Keygen" --passwordbox "Enter passphrase (empty for no passphrase)" 8 78 3>&1 1>&2 2>&3) || return
-    ssh-keygen -t ed25519 -f /home/$NAME/.ssh/$KEYNAME -q -N "$PASSPHRASE" -C $EMAIL
-    unset EMAIL KEYNAME PASSPHRASE
-}
-
 gpg-generate() {
     whiptail --title "GPG Key" --yesno "Generate GPG key?" 8 78 || return
     username || error "Could not get username."
+
+    # generate gpg key
     KEYTYPE=$(whiptail --title "GPG Keygen" --inputbox "Enter key type" 8 78 "1" 3>&1 1>&2 2>&3) || return
     KEYLENGTH=$(whiptail --title "GPG Keygen" --inputbox "Enter key length" 8 78 "3072" 3>&1 1>&2 2>&3) || return
     KEYVALIDITY=$(whiptail --title "GPG Keygen" --inputbox "Enter key expiration time" 8 78 "0" 3>&1 1>&2 2>&3) || return
@@ -195,133 +141,245 @@ gpg-generate() {
 cat >/tmp/gpg-key-params <<EOF
     Key-Type: $KEYTYPE
     Key-Length: $KEYLENGTH
-    Subkey-Type: $KEYTYPE
-    Subkey-Length: $KEYLENGTH
     Name-Real: $REALNAME
     Name-Comment: $COMMENT
     Name-Email: $EMAIL
     Expire-Date: $KEYVALIDITY
     Passphrase: $PASSPHRASE
+
+    Subkey-Type: $KEYTYPE
+    Subkey-Length: $KEYLENGTH
+    Subkey-Usage: encrypt
+
+    Subkey-Type: $KEYTYPE
+    Subkey-Length: $KEYLENGTH
+    Subkey-Usage: auth
+
+    %commit
 EOF
     sudo -u $NAME gpg --batch --generate-key /tmp/gpg-key-params
     rm -rf /tmp/gpg-key-params
     unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
-}
-#=============================================
 
-desktop() {
+    # install ssh and pam-gnupg
+    PKG=(
+        openssh
+        pam-gnupg
+    )
+    pkginstall $NAME ${PKG[@]} || error "Could not install SSH packages."
+
+    # set auth subkey for ssh
+    gpg -K --with-keygrip | awk '
+    /^\s*ssb.*\[E\]/ { in_ssb_e = 1; next }
+    in_ssb_e && /Keygrip/ { print $3; exit }
+    ' > /home/$NAME/.gnupg/sshcontrol
+
+    # activate auth and encrypt key at login
+    gpg -K --with-keygrip | awk '
+    /^\s*ssb.*\[E\]/ { in_ssb_e = 1; next }
+    in_ssb_e && /Keygrip/ { print $3; exit }
+    ' > /home/$NAME//.pam-gnupg
+    gpg -K --with-keygrip | awk '
+    /^\s*ssb.*\[A\]/ { in_ssb_e = 1; next }
+    in_ssb_e && /Keygrip/ { print $3; exit }
+    ' > /home/$NAME//.pam-gnupg
+
+    # pam login service
+    cat <<EOT >> /etc/pam.d/system-local-login
+    auth     optional  pam_gnupg.so store-only
+    session  optional  pam_gnupg.so
+EOT
+}
+
+desktop-setup() {
     whiptail --title "Desktop" --yesno "Install Desktop?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
-    desktop=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight xcompmgr feh slock dmenu maim xautolock)
-    # xcompmgr	-> terminal transparency
-    # feh	-> set desktop background
-    # slock	-> lock screen
-    # maim	-> take screenshot
-    pkginstall $NAME ${desktop[@]} || error "Could not install XORG packages."
+    # install xorg
+    XORG=(xorg-server xorg-xwininfo xorg-xinit xorg-xprop xorg-xdpyinfo xorg-xbacklight xorg-xrandr xorg-xrdb xorg-xbacklight)
+    pkginstall $NAME ${XORG[@]} || error "Could not install XORG packages."
 
-    [ ! -f "/home/$NAME/.local/share/fonts/JetBrainsMonoNerdFont-Regular.ttf" ] && fonts
+    # install desktop tool
+    DESKTOP=(
+        xcompmgr    # -> terminal transparency
+        feh         # -> set desktop background
+        maim        # -> take screenshot
+        xautolock   # -> autolock screen
+        lm_sensor   # -> temp monitor in status bar
+    )
+    pkginstall $NAME ${DESKTOP[@]} || error "Could not install XORG packages."
 
+    # install fonts
+    [ ! -f "/home/$NAME/.local/share/fonts/JetBrainsMonoNerdFont-Regular.ttf" ] && font-install
+
+    # install dwm
     sudo -u $NAME git clone https://github.com/nash169/dwm.git $REPODIR/dwm 
     sudo -u $NAME git -C $REPODIR/dwm remote add upstream git://git.suckless.org/dwm
     # sudo -u $NAME git -C $REPODIR/dwm fetch upstream
-    # sudo -u $NAME git -C $REPODIR/dwm merge upstream/master
-    # sudo -u $NAME git -C $REPODIR/dwm rebase upstream/master
-
+    # sudo -u $NAME git -C $REPODIR/dwm merge[rebase] upstream/master
+    [ -d "/home/$NAME/.local/bin" ] || sudo -u "$NAME" mkdir -p "/home/$NAME/.local/bin"
     if [ -d "$REPODIR/dotfiles" ]; then
         cd $REPODIR/dotfiles && sudo -u $NAME stow walls -t /home/$NAME 
         cd $REPODIR/dotfiles && sudo -u $NAME stow xserver -t /home/$NAME 
         cd $REPODIR/dotfiles && sudo -u $NAME stow dwm -t $REPODIR/dwm 
     fi
-
     cd $REPODIR/dwm && make install
 
+    # install statusbar
     sudo -u $NAME git clone https://github.com/nash169/dwmstatus.git $REPODIR/dwmstatus 
     sudo -u $NAME git -C $REPODIR/dwmstatus remote add upstream git://git.suckless.org/dwmstatus 
-    # sudo -u $NAME git -C $REPODIR/dwmstatus fetch upstream
-    # sudo -u $NAME git -C $REPODIR/dwmstatus rebase upstream/master
-    cd "$REPODIR/dwmstatus" && make install
+    cd "$REPODIR/dwmstatus" && make clean install
 
-cat >/etc/systemd/system/slock@.service <<EOF
-    [Unit]
-    Description=Lock X session using slock for user %i
-    Before=sleep.target
+    # install lock screen
+    sudo -u $NAME git clone https://github.com/nash169/slock.git $REPODIR/slock 
+    sudo -u $NAME git -C $REPODIR/slock remote add upstream git://git.suckless.org/slock 
+    cd "$REPODIR/slock" && make clean install
 
-    [Service]
-    User=%i
-    Environment=DISPLAY=:0
-    ExecStartPre=/usr/bin/xset dpms force suspend
-    ExecStart=/usr/bin/slock
+    # lock on sleep
+    if [ $INITSYS == "systemd" ]; then
+        cat >/etc/systemd/system/slock@.service <<EOF
+            [Unit]
+            Description=Lock X session using slock for user %i
+            Before=sleep.target
 
-    [Install]
-    WantedBy=sleep.target
+            [Service]
+            User=%i
+            Environment=DISPLAY=:0
+            ExecStartPre=/usr/bin/xset dpms force suspend
+            ExecStart=/usr/bin/slock
+
+            [Install]
+            WantedBy=sleep.target
 EOF
+        systemctl enable "slock@$NAME.service"
+    elif [ $INITSYS == "runit" ]; then 
+        cat >/etc/elogind/system-sleep/lockonsleep <<EOF
+            #!/bin/sh
+            # /lib/elogind/system-sleep/lock.sh
+            # Lock before suspend integration with elogind
 
-    systemctl enable "slock@$NAME.service"
+            username=$NAME
+            userhome=/home/$username
+            export XAUTHORITY="$userhome/.Xauthority"
+            export DISPLAY=":0.0"
+            case "${1}" in
+                pre)
+                    su $username -c "/usr/bin/slock" &
+                    sleep 1s;
+                    ;;
+            esac
+EOF
+        chmod +x /etc/elogind/system-sleep/lockonsleep
+    fi
 
+    # install menu bar
+    sudo -u $NAME git clone https://github.com/nash169/dmenu.git $REPODIR/dmenu 
+    sudo -u $NAME git -C $REPODIR/dmenu remote add upstream git://git.suckless.org/dmenu 
+    cd "$REPODIR/dmenu" && make clean install
 
-#!/bin/sh
-# /lib/elogind/system-sleep/lock.sh
-# Lock before suspend integration with elogind
-
-username=cooluser
-userhome=/home/$username
-export XAUTHORITY="$userhome/.Xauthority"
-export DISPLAY=":0.0"
-case "${1}" in
-    pre)
-        su $username -c "/usr/bin/slock" &
-        sleep 1s;
-        ;;
-esac
 }
 
 terminal() {
     whiptail --title "Terminal" --yesno "Install Terminal?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
-    [ ! -f "/home/$NAME/.local/share/fonts/JetBrainsMonoNerdFont-Regular.ttf" ] && fonts
-    [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u stow st -t $REPODIR/st 
+
+    # install font
+    [ ! -f "/home/$NAME/.local/share/fonts/JetBrainsMonoNerdFont-Regular.ttf" ] && font-install
+
+    # install terminal
     sudo -u $NAME git clone https://github.com/nash169/st.git $REPODIR/st 
     sudo -u $NAME git -C $REPODIR/st remote add upstream git://git.suckless.org/st 
-    # sudo -u $NAME git -C $REPODIR/st fetch upstream
-    # sudo -u $NAME git -C $REPODIR/st merge upstream/master
-    sudo -u $NAME git -C $REPODIR/st checkout custom
-    # sudo -u $NAME git -C $REPODIR/st rebase upstream/master
+    [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u stow st -t $REPODIR/st 
     cd $REPODIR/st && make install
 }
 
 shell() {
     whiptail --title "Shell" --yesno "Install Shell?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
-    PKGS=(tmux exa bat zsh zsh-completions zsh-autosuggestions zsh-syntax-highlighting)
+
+    # install shell tools
+    PKGS=(
+        tmux
+        exa
+        bat
+        ripgrep
+        fzf
+        htop
+        xclip
+        qrencode
+        pdftk
+        zsh
+        zsh-completions
+        zsh-autosuggestions
+        zsh-syntax-highlighting
+    )
     pkginstall $NAME ${PKGS[@]} || error "Could not install SHELL packages."
+
+    # activate shell
     chsh -s /bin/zsh "$NAME" >/dev/null 2>&1
-    if [ -d "$REPODIR/dotfiles" ]; then
-        cd $REPODIR/dotfiles && sudo -u $NAME stow zsh -t /home/$NAME
-    fi
+    [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow zsh -t /home/$NAME
     mkdir -p "/home/$NAME/.cache/zsh" && touch "$HISTFILE"
 }
 
 explorer() {
     whiptail --title "Explorer" --yesno "Install Explorer?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
-    explorer=(ripgrep fzf lf-git ueberzug)
-    pkginstall $NAME ${explorer[@]} || error "Could not install EXPLORER packages."
-    if [ -d "$REPODIR/dotfiles" ]; then
-        cd $REPODIR/dotfiles && sudo -u $NAME stow lf -t /home/$NAME
-    fi
+
+    # install file explorer
+    PKGS=(
+        lf-git
+        ueberzug
+    )
+    pkginstall $NAME ${PKGS[@]} || error "Could not install EXPLORER packages."
+    [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow lf -t /home/$NAME
 }
 
 editor() {
     whiptail --title "Editor" --yesno "Install Editor?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
-    PKGS=(neovim python-pynvim) 
-    # texlive-bin texlive-fontsrecomended texlive-latexextra texlive-latexrecomended texlive-latex texlive-basic texlive-xetex texlive-mathscience texlive-fontsextra texlive-langenglish texlive-context texlive-luatex texlive-plaingeneric texlive-binextra texlive-bibtexextra texlive-pictures texlive-langfrench texlive-langgerman texlive-fontutils) # ninja tree-sitter lua luarocks
+
+    # install editor
+    PKGS=(
+        neovim 
+        python-pynvim
+        ninja
+        tree-sitter
+        lua
+        luarocks
+        lazygit
+        xclip
+    )
     pkginstall $NAME ${PKGS[@]} || error "Could not install EDITOR packages."
     if [ ! -d "$REPODIR/dotfiles" ]; then
         cd $REPODIR/dotfiles && sudo -u $NAME stow nvim -t /home/$NAME
         cd $REPODIR/dotfiles && sudo -u $NAME stow format -t /home/$NAME
     fi
+
+    # install tex
+    whiptail --title "Editor" --yesno "Install Tex?" 8 78 && {
+        PKGS=(
+            texlive-bin 
+            texlive-fontsrecomended 
+            texlive-latexextra 
+            texlive-latexrecomended 
+            texlive-latex 
+            texlive-basic 
+            texlive-xetex 
+            texlive-mathscience 
+            texlive-fontsextra 
+            texlive-langenglish 
+            texlive-context
+            texlive-luatex
+            texlive-plaingeneric
+            texlive-binextra
+            texlive-bibtexextra
+            texlive-pictures
+            texlive-langfrench
+            texlive-langgerman
+            texlive-fontutils
+        )
+        pkginstall $NAME ${PKGS[@]} || error "Could not install EDITOR packages."
+    }
 }
 
 browser() {
@@ -359,14 +417,13 @@ browser() {
         sudo -u $NAME mv "/tmp/$file" "$PROFILEDIR/extensions/$id.xpi"
     done
     sudo -u $NAME pkill firefox
-    # Settings -> Privacy and Security -> Cookies and Site Data -> Manage Exceptions
 }
 
-email() {
+email-setup() {
     whiptail --title "Email Client" --yesno "Install Email Client?" 8 78 || return
     username || { echo "Could not get username"; return; }
     gpgkeygen || { echo "Could not generate GPG key pair"; return; }
-    PKGS=(neomutt isync msmtp pass ca-certificates gettext pam-gnupg lynx notmuch abook urlview cronie mutt-wizard-git)
+    PKGS=(neomutt isync msmtp pass ca-certificates gettext lynx notmuch abook urlview cronie mutt-wizard-git)
     pkginstall $NAME ${PKGS[@]} || error "Could not install EMAIL packages."
     EMAILID=$(whiptail --title "Email Client" --inputbox "Insert email" 8 78 3>&1 1>&2 2>&3) || return
     IMAPSERVER=$(whiptail --title "Email Client" --inputbox "Insert IMAP server" 8 78 3>&1 1>&2 2>&3) || return
@@ -385,64 +442,142 @@ EOF
     unset EMAILID IMAPSERVER SMTPSERVER GPGPUBLIC EMAILPASS GPGPASS
 }
 
-keyboard() {
-Section "InputClass"
-        Identifier "system-keyboard"
-        MatchIsKeyboard "on"
-        Option "XkbLayout" "us"
-        Option "XkbModel" "default"
-        Option "XkbOptions" "ctrl:swapcaps,compose:ralt"
-EndSectionSection "InputClass"
+keyboard-setup() {
+    # setup xorg
+    cat >/etc/X11/xorg.conf.d/00-keyboard.conf <<EOF
+        Section "InputClass"
+                Identifier "system-keyboard"
+                MatchIsKeyboard "on"
+                Option "XkbLayout" "us"
+                Option "XkbModel" "default"
+                Option "XkbOptions" "ctrl:swapcaps,compose:ralt"
+        EndSectionSection "InputClass"
+EOF
+
+    # setup console
+    cat >/etc/vconsole.conf <<EOF
+        KEYMAP=us
+        XKBLAYOUT=us
+        XKBMODEL=default
+        XKBOPTIONS=ctrl:swapcaps,compose:ralt
+EOF
 }
 
-bluetooth() {
+bluetooth-setup() {
     whiptail --title "Install the bluetooth tools?" --yesno "Bluetooth" 8 78 || return
     username || error "Could not get username."
 
-    bluetooth=(bluez bluez-utils) 
-    pkg-install $NAME ${bluetooth[@]} || error "Could not install BLUETOOTH packages."
+    # install bluetooth
+    PKGS=(
+        bluez 
+        bluez-utils
+    )
+    pkg-install $NAME ${PKGS[@]} || error "Could not install BLUETOOTH packages."
+
+    # autostart
     [ $INITSYS == "runint" ] && pkg-install $NAME bluez-ruinit && sudo ln -s /etc/runit/sv/bluetoothd /run/runit/service/ && sudo sv up bluetoothd
     [ $INITSYS == "systemd" ] && systemctl enable bluetooth.service && systemctl start bluetooth.service
     sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
 }
 
-audio() {
+audio-setup() {
     whiptail --title "Install audio tools?" --yesno "Audio" 8 78 || return
     username || error "Could not get username."
-    pkginstall $NAME ${AUDIO[@]} || error "Could not install AUDIO packages."
+
+    # install audio
+    PKGS=(
+        pipewire 
+        wireplumber 
+        pipewire-pulse
+    )
+    pkginstall $NAME ${PKGS[@]} || error "Could not install AUDIO packages."
+
+    # autostart
     [ $INITSYS == "systemd" ] && systemctl start pipewire-pulse.socket
 }
 
-tools() {
-    whiptail --title "Install basic tools?" --yesno "Media" 8 78 || return
-    username || error "Could not get username."
 
-    TOOLS=(xclip fd qrencode yt-dlp)
-    pkginstall "$NAME" "${TOOLS[@]}" || error "Could not install TOOLS packages."
-}
-
-mediatools() {
+media-setup() {
     whiptail --title "Install media tools?" --yesno "Media" 8 78 || return
     username || error "Could not get username."
 
-    mediatools=(nsxiv mpd mpc mpv zathura zathura-pdf-mupdf zotero)
+    PKGS=(
+        nsxiv
+        mpd
+        mpc
+        mpv
+    )
     pkginstall $NAME ${mediatools[@]} || error "Could not install MEDIA TOOLS packages."
 }
 
-downtools() {
-    whiptail --title "Install Download Tools?" --yesno "Download" 8 78 || return
+iot-setup() {
+    whiptail --title "Install IoT Tools?" --yesno "Download" 8 78 || return
     username || error "Could not get username."
 
-    download=(transmission-cli youtube-dl) # rtorrent
-    pkginstall $NAME ${download[@]} || error "Could not install DOWNLOAD TOOLS packages."
+    PKGS=(
+        transmission-cli 
+        rtorrent
+        youtube-dl
+        wireguard-tools
+        yt-dlp
+        rsync
+        syncthing
+    )
+    pkginstall $NAME ${PKGS[@]} || error "Could not install IOT TOOLS packages."
 }
 
-devtools() {
+reader-setup() {
+    PKGS=(
+        libreoffice-fresh
+        zathura
+        zathura-pdf-mupdf 
+        zotero
+    )
+}
+
+organizer-setup () {
+    PKGS=(
+        logseq
+        zotero
+        calcurse
+    )
+}
+
+social-setup () {
+    PKGS=(
+        telegram-desktop
+        zoom
+        slack
+    )
+}
+
+graphics-setup() {
+    PKGS=(
+        blender
+        gimp
+        inkscape
+        freecad
+    )
+}
+
+dev-setup() {
     whiptail --title "Install Dev Tools?" --yesno "Download" 8 78 || return
     username || error "Could not get username."
 
-    devtools=(cmake eigen clang)
-    pkginstall $NAME ${devtools[@]} || error "Could not install DEVELOPMENT TOOLS packages."
+    PKGS=(
+        cmake 
+        eigen 
+        clang
+        uv
+    )
+    pkginstall $NAME ${PKGS[@]} || error "Could not install DEVELOPMENT TOOLS packages."
+}
+
+
+gaming-setup() {
+    PKGS=(
+        steam
+    )
 }
 
 if [ "${1}" != "--source" ]; then
@@ -458,8 +593,27 @@ if [ "${1}" != "--source" ]; then
         git
     )
     pkginstall root ${PKGS[@]} || "Error: could not install BASIC packages."
-    
-    [ -d "/home/$NAME/.local/bin" ] || sudo -u "$NAME" mkdir -p "/home/$NAME/.local/bin"
+
+    CHOICES=$(whiptail --title "Install Config" --checklist "Choose modules to install/setup" 8 78 \
+        "Add User" "Create new user" OFF \
+        "AUR helper" "Install AUR helper" OFF \
+        "Keyboard" "Set us keyboard and swap ctrl with caps lock" OFF \
+        "Audio" "Install & setup audio system" OFF \
+        "Bluetooth" "Instal & setup bluetooth" OFF \
+        "Desktop" "Install and configure dwm environment" OFF \
+        "Terminal" "Install and configure st terminal" OFF \
+        "Shell" "Install and activate ZSH plus other usefull tools" OFF \
+        "GPG" "Generate GPG key pair and setup ssh/pam" OFF \
+        "Email" "Install & setup neomutt client" OFF \
+        "Browser" "Install firefox, apply arkenfox and install puglins." OFF \
+        "Tools" "Install various tools" OFF 3>&1 1>&2 2>&3) || { echo "User exit"; return; }
+
+    for CHOICE in $CHOICES; do
+        case "$CHOICE" in
+            "Add User")
+                ;;
+        esac
+    done
     #
     # adduser || error "User exit"
     # aurhelper || error "User exit"
@@ -474,18 +628,3 @@ if [ "${1}" != "--source" ]; then
     # downtools || error "User exit"
     # devtools || error "User exit"
 fi
-
-
-# pkgcheck() {
-#     if pacman -Qi $1 &> /dev/null; then
-#         tput setaf 2
-#         echo "The package "$1" is already installed"
-#         tput sgr0
-#         true
-#     else
-#         tput setaf 1
-#         echo "Package "$1" has NOT been installed"
-#         tput sgr0
-#         false
-#     fi
-# }
