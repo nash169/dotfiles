@@ -13,10 +13,13 @@ user_pref("extensions.pocket.enabled", false);
 // disable mozilla account
 user_pref("identity.fxaccounts.enabled", false);
 
-// cookies exceptions
-
 // do no ask to save passwords
+user_pref("signon.rememberSignons", false);
 
-// import bookmarks
-
+// always ask where to save
 user_pref("browser.download.always_ask_before_handling_new_types", false);
+
+// downloads dir
+user_pref("browser.download.dir", "~/downloads");
+
+// cookies exceptions
