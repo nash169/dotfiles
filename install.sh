@@ -1,7 +1,5 @@
 #!/bin/sh
 
-
-
 error() {
     printf "%s\n" "$1" >&2
     return 1
@@ -37,28 +35,11 @@ dotfiles() {
     fi
 }
 
-#=============================================
-user-add() {
-    whiptail --title "Add User" --yesno "Add new user?" 8 78 || return
-    NAME=$(whiptail --inputbox "Enter username" 8 78 --title "Add User" 3>&1 1>&2 2>&3) || return
-    while ! echo "$NAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
-        NAME=$(whiptail --inputbox "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _." 8 78 --title "Add User" 3>&1 1>&2 2>&3 3>&1) || return
-    done
-    if id -u "$NAME" >/dev/null 2>&1; then 
-        whiptail --title "Warning" --msgbox "The user already exist." 8 78
-        return
-    fi
-    PASS=$(whiptail --passwordbox "Enter password" 8 78 --title "Add User" 3>&1 1>&2 2>&3) || return
-    useradd -m -g wheel -s /bin/zsh "$NAME" >/dev/null 2>&1 || usermod -a -G wheel "$NAME" && mkdir -p /home/"$NAME" && chown "$NAME":wheel /home/"$NAME"
-    echo "$NAME:$PASS" | chpasswd
-    unset PASS 
-}
-
 pkg-install() {
     username=$1
     shift
     for item in "$@"; do
-	if ! pkgcheck $item; then
+	if ! pkg-check $item; then
 	    if pacman -Ss $item &> /dev/null; then
                 tput setaf 3
                 echo "Installing package "$item" with pacman"
@@ -91,6 +72,58 @@ pkg-install() {
     done
 }
 
+font-install() {
+    sudo -u $NAME curl -L -o /tmp/fonts.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/JetBrainsMono.zip
+    [ $? -eq 0 ] || { echo "Download failed."; return; }
+
+    sudo -u $NAME mkdir -p /tmp/fonts
+    sudo -u $NAME unzip /tmp/fonts.zip -d /tmp/fonts/
+    [ $? -eq 0 ] || { echo "Extraction failed."; return; }
+
+    FONTSDIR=/home/$NAME/.local/share/fonts
+    [ ! -d $FONTSDIR ] && sudo -u $NAME mkdir -p $FONTSDIR
+    cp /tmp/fonts/JetBrainsMonoNerdFont-* $FONTSDIR
+    # rm -rf /tmp/file.zip /tmp/fonts
+}
+
+tools-install() {
+    TOOLS=$1
+    shift
+    whiptail --title "Install $TOOLS tools" --yesno "Do you want to install $TOOLS tools?" 8 78 || { echo "User exit"; return; }
+    username || error "Could not get username."
+    CHECKLIST=()
+    for PKG in "$@"; do
+        echo "$PKG"
+        CHECKLIST+=("$PKG" "" OFF)
+    done
+
+    CHOICES=$(whiptail --title "Install $TOOLS tools" \
+        --checklist "Choose packages to install" 20 78 12 \
+        "${CHECKLIST[@]}" 3>&1 1>&2 2>&3) || { echo "User exit"; return; }
+    CHOICES=$(echo "$CHOICES" | tr -d '"')
+    pkg-install $NAME ${CHOICES[@]} || error "Could not install $TOOLS tools packages."
+}
+
+
+#====================================================================================================
+# MODULES
+#====================================================================================================
+user-add() {
+    whiptail --title "Add User" --yesno "Add new user?" 8 78 || return
+    NAME=$(whiptail --inputbox "Enter username" 8 78 --title "Add User" 3>&1 1>&2 2>&3) || return
+    while ! echo "$NAME" | grep -q "^[a-z_][a-z0-9_-]*$"; do
+        NAME=$(whiptail --inputbox "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _." 8 78 --title "Add User" 3>&1 1>&2 2>&3 3>&1) || return
+    done
+    if id -u "$NAME" >/dev/null 2>&1; then 
+        whiptail --title "Warning" --msgbox "The user already exist." 8 78
+        return
+    fi
+    PASS=$(whiptail --passwordbox "Enter password" 8 78 --title "Add User" 3>&1 1>&2 2>&3) || return
+    useradd -m -g wheel -s /bin/zsh "$NAME" >/dev/null 2>&1 || usermod -a -G wheel "$NAME" && mkdir -p /home/"$NAME" && chown "$NAME":wheel /home/"$NAME"
+    echo "$NAME:$PASS" | chpasswd
+    unset PASS 
+}
+#====================================================================================================
 aurhelper-install() {
     PKGS=$(whiptail --title "Install AUR helper?" --checklist "Choose AUR helper" 8 78 \
         "yay" "" ON \
@@ -111,86 +144,61 @@ aurhelper-install() {
     done
     sed -i '/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^/#/g' /etc/sudoers
 }
+#====================================================================================================
+keyboard-setup() {
+    # setup xorg
+    cat >/etc/X11/xorg.conf.d/00-keyboard.conf <<EOF
+        Section "InputClass"
+                Identifier "system-keyboard"
+                MatchIsKeyboard "on"
+                Option "XkbLayout" "us"
+                Option "XkbModel" "default"
+                Option "XkbOptions" "ctrl:swapcaps,compose:ralt"
+        EndSectionSection "InputClass"
+EOF
 
-font-install() {
-    sudo -u $NAME curl -L -o /tmp/fonts.zip https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/JetBrainsMono.zip
-    [ $? -eq 0 ] || { echo "Download failed."; return; }
-
-    sudo -u $NAME mkdir -p /tmp/fonts
-    sudo -u $NAME unzip /tmp/fonts.zip -d /tmp/fonts/
-    [ $? -eq 0 ] || { echo "Extraction failed."; return; }
-
-    FONTSDIR=/home/$NAME/.local/share/fonts
-    [ ! -d $FONTSDIR ] && sudo -u $NAME mkdir -p $FONTSDIR
-    cp /tmp/fonts/JetBrainsMonoNerdFont-* $FONTSDIR
-    # rm -rf /tmp/file.zip /tmp/fonts
+    # setup console
+    cat >/etc/vconsole.conf <<EOF
+        KEYMAP=us
+        XKBLAYOUT=us
+        XKBMODEL=default
+        XKBOPTIONS=ctrl:swapcaps,compose:ralt
+EOF
 }
-
-gpg-generate() {
-    whiptail --title "GPG Key" --yesno "Generate GPG key?" 8 78 || return
+#====================================================================================================
+audio-setup() {
+    whiptail --title "Install audio tools?" --yesno "Audio" 8 78 || return
     username || error "Could not get username."
 
-    # generate gpg key
-    KEYTYPE=$(whiptail --title "GPG Keygen" --inputbox "Enter key type" 8 78 "1" 3>&1 1>&2 2>&3) || return
-    KEYLENGTH=$(whiptail --title "GPG Keygen" --inputbox "Enter key length" 8 78 "3072" 3>&1 1>&2 2>&3) || return
-    KEYVALIDITY=$(whiptail --title "GPG Keygen" --inputbox "Enter key expiration time" 8 78 "0" 3>&1 1>&2 2>&3) || return
-    REALNAME=$(whiptail --title "GPG Keygen" --inputbox "Enter real name" 8 78 3>&1 1>&2 2>&3) || return
-    EMAIL=$(whiptail --title "GPG Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
-    COMMENT=$(whiptail --title "GPG Keygen" --inputbox "Enter comment" 8 78 3>&1 1>&2 2>&3) || return
-    PASSPHRASE=$(whiptail --title "GPG Keygen" --passwordbox "Enter passphrase" 8 78 3>&1 1>&2 2>&3) || return
-cat >/tmp/gpg-key-params <<EOF
-    Key-Type: $KEYTYPE
-    Key-Length: $KEYLENGTH
-    Name-Real: $REALNAME
-    Name-Comment: $COMMENT
-    Name-Email: $EMAIL
-    Expire-Date: $KEYVALIDITY
-    Passphrase: $PASSPHRASE
-
-    Subkey-Type: $KEYTYPE
-    Subkey-Length: $KEYLENGTH
-    Subkey-Usage: encrypt
-
-    Subkey-Type: $KEYTYPE
-    Subkey-Length: $KEYLENGTH
-    Subkey-Usage: auth
-
-    %commit
-EOF
-    sudo -u $NAME gpg --batch --generate-key /tmp/gpg-key-params
-    rm -rf /tmp/gpg-key-params
-    unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
-
-    # install ssh and pam-gnupg
-    PKG=(
-        openssh
-        pam-gnupg
+    # install audio
+    PKGS=(
+        pipewire 
+        wireplumber 
+        pipewire-pulse
     )
-    pkginstall $NAME ${PKG[@]} || error "Could not install SSH packages."
+    pkginstall $NAME ${PKGS[@]} || error "Could not install AUDIO packages."
 
-    # set auth subkey for ssh
-    gpg -K --with-keygrip | awk '
-    /^\s*ssb.*\[E\]/ { in_ssb_e = 1; next }
-    in_ssb_e && /Keygrip/ { print $3; exit }
-    ' > /home/$NAME/.gnupg/sshcontrol
-
-    # activate auth and encrypt key at login
-    gpg -K --with-keygrip | awk '
-    /^\s*ssb.*\[E\]/ { in_ssb_e = 1; next }
-    in_ssb_e && /Keygrip/ { print $3; exit }
-    ' > /home/$NAME//.pam-gnupg
-    gpg -K --with-keygrip | awk '
-    /^\s*ssb.*\[A\]/ { in_ssb_e = 1; next }
-    in_ssb_e && /Keygrip/ { print $3; exit }
-    ' > /home/$NAME//.pam-gnupg
-
-    # pam login service
-    cat <<EOT >> /etc/pam.d/system-local-login
-    auth     optional  pam_gnupg.so store-only
-    session  optional  pam_gnupg.so
-EOT
+    # autostart
+    [ $INITSYS == "systemd" ] && systemctl start pipewire-pulse.socket
 }
+#====================================================================================================
+bluetooth-setup() {
+    whiptail --title "Install the bluetooth tools?" --yesno "Bluetooth" 8 78 || return
+    username || error "Could not get username."
 
+    # install bluetooth
+    PKGS=(
+        bluez
+        bluez-utils
+    )
+    pkg-install $NAME ${PKGS[@]} || error "Could not install BLUETOOTH packages."
+
+    # autostart
+    [ $INITSYS == "runint" ] && pkg-install $NAME bluez-ruinit && sudo ln -s /etc/runit/sv/bluetoothd /run/runit/service/ && sudo sv up bluetoothd
+    [ $INITSYS == "systemd" ] && systemctl enable bluetooth.service && systemctl start bluetooth.service
+    sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
+}
+#====================================================================================================
 desktop-setup() {
     whiptail --title "Desktop" --yesno "Install Desktop?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
@@ -278,8 +286,8 @@ EOF
     cd "$REPODIR/dmenu" && make clean install
 
 }
-
-terminal() {
+#====================================================================================================
+terminal-setup() {
     whiptail --title "Terminal" --yesno "Install Terminal?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
@@ -292,8 +300,8 @@ terminal() {
     [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u stow st -t $REPODIR/st 
     cd $REPODIR/st && make install
 }
-
-shell() {
+#====================================================================================================
+shell-setup() {
     whiptail --title "Shell" --yesno "Install Shell?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
@@ -320,21 +328,8 @@ shell() {
     [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow zsh -t /home/$NAME
     mkdir -p "/home/$NAME/.cache/zsh" && touch "$HISTFILE"
 }
-
-explorer() {
-    whiptail --title "Explorer" --yesno "Install Explorer?" 8 78 || return
-    dotfiles || error "Could not fetch the dotfiles."
-
-    # install file explorer
-    PKGS=(
-        lf-git
-        ueberzug
-    )
-    pkginstall $NAME ${PKGS[@]} || error "Could not install EXPLORER packages."
-    [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow lf -t /home/$NAME
-}
-
-editor() {
+#====================================================================================================
+editor-setup() {
     whiptail --title "Editor" --yesno "Install Editor?" 8 78 || return
     dotfiles || error "Could not fetch the dotfiles."
 
@@ -381,8 +376,21 @@ editor() {
         pkginstall $NAME ${PKGS[@]} || error "Could not install EDITOR packages."
     }
 }
+#====================================================================================================
+explorer-setup() {
+    whiptail --title "Explorer" --yesno "Install Explorer?" 8 78 || return
+    dotfiles || error "Could not fetch the dotfiles."
 
-browser() {
+    # install file explorer
+    PKGS=(
+        lf-git
+        ueberzug
+    )
+    pkginstall $NAME ${PKGS[@]} || error "Could not install EXPLORER packages."
+    [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow lf -t /home/$NAME
+}
+#====================================================================================================
+browser-setup() {
     whiptail --title "Browser" --yesno "Install Browser?" 8 78 || return
     username || { echo "Could not get username"; return; }
     userrepo || { echo "Could not repository directory"; return; }
@@ -418,13 +426,82 @@ browser() {
     done
     sudo -u $NAME pkill firefox
 }
+#====================================================================================================
+gpg-setup() {
+    whiptail --title "GPG Key" --yesno "Generate GPG key?" 8 78 || return
+    username || error "Could not get username."
 
+    # generate gpg key
+    KEYTYPE=$(whiptail --title "GPG Keygen" --inputbox "Enter key type" 8 78 "1" 3>&1 1>&2 2>&3) || return
+    KEYLENGTH=$(whiptail --title "GPG Keygen" --inputbox "Enter key length" 8 78 "3072" 3>&1 1>&2 2>&3) || return
+    KEYVALIDITY=$(whiptail --title "GPG Keygen" --inputbox "Enter key expiration time" 8 78 "0" 3>&1 1>&2 2>&3) || return
+    REALNAME=$(whiptail --title "GPG Keygen" --inputbox "Enter real name" 8 78 3>&1 1>&2 2>&3) || return
+    EMAIL=$(whiptail --title "GPG Keygen" --inputbox "Enter email" 8 78 3>&1 1>&2 2>&3) || return
+    COMMENT=$(whiptail --title "GPG Keygen" --inputbox "Enter comment" 8 78 3>&1 1>&2 2>&3) || return
+    PASSPHRASE=$(whiptail --title "GPG Keygen" --passwordbox "Enter passphrase" 8 78 3>&1 1>&2 2>&3) || return
+cat >/tmp/gpg-key-params <<EOF
+    Key-Type: $KEYTYPE
+    Key-Length: $KEYLENGTH
+    Name-Real: $REALNAME
+    Name-Comment: $COMMENT
+    Name-Email: $EMAIL
+    Expire-Date: $KEYVALIDITY
+    Passphrase: $PASSPHRASE
+
+    Subkey-Type: $KEYTYPE
+    Subkey-Length: $KEYLENGTH
+    Subkey-Usage: encrypt
+
+    Subkey-Type: $KEYTYPE
+    Subkey-Length: $KEYLENGTH
+    Subkey-Usage: auth
+
+    %commit
+EOF
+    sudo -u $NAME gpg --batch --generate-key /tmp/gpg-key-params
+    rm -rf /tmp/gpg-key-params
+    unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
+
+    # install ssh and pam-gnupg
+    PKG=(
+        openssh
+        pam-gnupg
+    )
+    pkginstall $NAME ${PKG[@]} || error "Could not install SSH packages."
+
+    # set gpg agent conf
+    dotfiles || error "Could not fetch the dotfiles."
+    [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow gpg -t /home/$NAME
+
+    # set auth subkey for ssh
+    gpg -K --with-keygrip | awk '
+    /^\s*ssb.*\[E\]/ { in_ssb_e = 1; next }
+    in_ssb_e && /Keygrip/ { print $3; exit }
+    ' > /home/$NAME/.gnupg/sshcontrol
+
+    # activate auth and encrypt key at login
+    gpg -K --with-keygrip | awk '
+    /^\s*ssb.*\[E\]/ { in_ssb_e = 1; next }
+    in_ssb_e && /Keygrip/ { print $3; exit }
+    ' > /home/$NAME//.pam-gnupg
+    gpg -K --with-keygrip | awk '
+    /^\s*ssb.*\[A\]/ { in_ssb_e = 1; next }
+    in_ssb_e && /Keygrip/ { print $3; exit }
+    ' > /home/$NAME//.pam-gnupg
+
+    # pam login service
+    cat <<EOT >> /etc/pam.d/system-local-login
+    auth     optional  pam_gnupg.so store-only
+    session  optional  pam_gnupg.so
+EOT
+}
+#====================================================================================================
 email-setup() {
     whiptail --title "Email Client" --yesno "Install Email Client?" 8 78 || return
     username || { echo "Could not get username"; return; }
-    gpgkeygen || { echo "Could not generate GPG key pair"; return; }
+    gpg-keygen || { echo "Could not generate GPG key pair"; return; }
     PKGS=(neomutt isync msmtp pass ca-certificates gettext lynx notmuch abook urlview cronie mutt-wizard-git)
-    pkginstall $NAME ${PKGS[@]} || error "Could not install EMAIL packages."
+    pkg-install $NAME ${PKGS[@]} || error "Could not install EMAIL packages."
     EMAILID=$(whiptail --title "Email Client" --inputbox "Insert email" 8 78 3>&1 1>&2 2>&3) || return
     IMAPSERVER=$(whiptail --title "Email Client" --inputbox "Insert IMAP server" 8 78 3>&1 1>&2 2>&3) || return
     SMTPSERVER=$(whiptail --title "Email Client" --inputbox "Insert SMTP server" 8 78 $IMAPSERVER 3>&1 1>&2 2>&3) || return
@@ -441,149 +518,19 @@ $GPGPASS
 EOF
     unset EMAILID IMAPSERVER SMTPSERVER GPGPUBLIC EMAILPASS GPGPASS
 }
-
-keyboard-setup() {
-    # setup xorg
-    cat >/etc/X11/xorg.conf.d/00-keyboard.conf <<EOF
-        Section "InputClass"
-                Identifier "system-keyboard"
-                MatchIsKeyboard "on"
-                Option "XkbLayout" "us"
-                Option "XkbModel" "default"
-                Option "XkbOptions" "ctrl:swapcaps,compose:ralt"
-        EndSectionSection "InputClass"
-EOF
-
-    # setup console
-    cat >/etc/vconsole.conf <<EOF
-        KEYMAP=us
-        XKBLAYOUT=us
-        XKBMODEL=default
-        XKBOPTIONS=ctrl:swapcaps,compose:ralt
-EOF
+#====================================================================================================
+amdcpu-setup() {
+    PGKS=(amd-ucode)
 }
 
-bluetooth-setup() {
-    whiptail --title "Install the bluetooth tools?" --yesno "Bluetooth" 8 78 || return
-    username || error "Could not get username."
-
-    # install bluetooth
-    PKGS=(
-        bluez 
-        bluez-utils
-    )
-    pkg-install $NAME ${PKGS[@]} || error "Could not install BLUETOOTH packages."
-
-    # autostart
-    [ $INITSYS == "runint" ] && pkg-install $NAME bluez-ruinit && sudo ln -s /etc/runit/sv/bluetoothd /run/runit/service/ && sudo sv up bluetoothd
-    [ $INITSYS == "systemd" ] && systemctl enable bluetooth.service && systemctl start bluetooth.service
-    sed -i 's/'#AutoEnable=false'/'AutoEnable=true'/g' /etc/bluetooth/main.conf
-}
-
-audio-setup() {
-    whiptail --title "Install audio tools?" --yesno "Audio" 8 78 || return
-    username || error "Could not get username."
-
-    # install audio
-    PKGS=(
-        pipewire 
-        wireplumber 
-        pipewire-pulse
-    )
-    pkginstall $NAME ${PKGS[@]} || error "Could not install AUDIO packages."
-
-    # autostart
-    [ $INITSYS == "systemd" ] && systemctl start pipewire-pulse.socket
-}
-
-
-media-setup() {
-    whiptail --title "Install media tools?" --yesno "Media" 8 78 || return
-    username || error "Could not get username."
-
-    PKGS=(
-        nsxiv
-        mpd
-        mpc
-        mpv
-    )
-    pkginstall $NAME ${mediatools[@]} || error "Could not install MEDIA TOOLS packages."
-}
-
-iot-setup() {
-    whiptail --title "Install IoT Tools?" --yesno "Download" 8 78 || return
-    username || error "Could not get username."
-
-    PKGS=(
-        transmission-cli 
-        rtorrent
-        youtube-dl
-        wireguard-tools
-        yt-dlp
-        rsync
-        syncthing
-    )
-    pkginstall $NAME ${PKGS[@]} || error "Could not install IOT TOOLS packages."
-}
-
-reader-setup() {
-    PKGS=(
-        libreoffice-fresh
-        zathura
-        zathura-pdf-mupdf 
-        zotero
-    )
-}
-
-organizer-setup () {
-    PKGS=(
-        logseq
-        zotero
-        calcurse
-    )
-}
-
-social-setup () {
-    PKGS=(
-        telegram-desktop
-        zoom
-        slack
-    )
-}
-
-graphics-setup() {
-    PKGS=(
-        blender
-        gimp
-        inkscape
-        freecad
-    )
-}
-
-dev-setup() {
-    whiptail --title "Install Dev Tools?" --yesno "Download" 8 78 || return
-    username || error "Could not get username."
-
-    PKGS=(
-        cmake 
-        eigen 
-        clang
-        uv
-    )
-    pkginstall $NAME ${PKGS[@]} || error "Could not install DEVELOPMENT TOOLS packages."
-}
-
-
-gaming-setup() {
-    PKGS=(
-        steam
-    )
+nvidiagpu-setup() {
+    PGKS=(nvidia cuda)
 }
 
 if [ "${1}" != "--source" ]; then
-    # DISTRO=$(awk '/DISTRIB_ID=/' /etc/*-release | sed 's/DISTRIB_ID=//' | tr '[:upper:]' '[:lower:]')
-    # INITSYS=
-    whiptail --title "Install Config" --yesno "Install configuration?" 8 78 || return
+    DISTRO=$(awk '/DISTRIB_ID=/' /etc/*-release | sed 's/DISTRIB_ID=//' | tr '[:upper:]' '[:lower:]')
+    INITSYS=
+    whiptail --title "Install Config" --yesno "Install configuration?" 8 78 || { echo "User exit"; exit; }
     sed -i 's/'#Color'/'Color'/g' /etc/pacman.conf
     pacman --noconfirm --needed -Sy libnewt
     pacman --noconfirm -Sy archlinux-keyring >/dev/null 2>&1
@@ -592,11 +539,12 @@ if [ "${1}" != "--source" ]; then
         unzip
         git
     )
-    pkginstall root ${PKGS[@]} || "Error: could not install BASIC packages."
+    pkg-install root ${PKGS[@]} || "Error: could not install BASIC packages."
 
-    CHOICES=$(whiptail --title "Install Config" --checklist "Choose modules to install/setup" 8 78 \
+    CHOICES=$(whiptail --title "Install Config" --checklist \
+        "Choose modules to install/setup" 20 78 12 \
         "Add User" "Create new user" OFF \
-        "AUR helper" "Install AUR helper" OFF \
+        "AUR_helper" "Install AUR helper" OFF \
         "Keyboard" "Set us keyboard and swap ctrl with caps lock" OFF \
         "Audio" "Install & setup audio system" OFF \
         "Bluetooth" "Instal & setup bluetooth" OFF \
@@ -605,26 +553,64 @@ if [ "${1}" != "--source" ]; then
         "Shell" "Install and activate ZSH plus other usefull tools" OFF \
         "GPG" "Generate GPG key pair and setup ssh/pam" OFF \
         "Email" "Install & setup neomutt client" OFF \
-        "Browser" "Install firefox, apply arkenfox and install puglins." OFF \
-        "Tools" "Install various tools" OFF 3>&1 1>&2 2>&3) || { echo "User exit"; return; }
+        "Browser" "Install firefox, apply arkenfox and install puglins" OFF \
+        "Tools" "Install various tools" OFF 3>&1 1>&2 2>&3) || { echo "User exit"; exit; }
 
     for CHOICE in $CHOICES; do
-        case "$CHOICE" in
+        CHOICE="${CHOICE%\"}"
+        CHOICE="${CHOICE#\"}"
+        case $CHOICE in
             "Add User")
+                user-add
+                ;;
+            "AUR helper")
+                aurhelper-install
+                ;;
+            "Keyboard")
+                keyboard-setup
+                ;;
+            "Audio")
+                audio-setup
+                ;;
+            "Bluetooth")
+                bluetooth-setup
+                ;;
+            "Desktop")
+                desktop-setup
+                ;;
+            "Terminal")
+                terminal-setup
+                ;;
+            "Shell")
+                shell-setup
+                ;;
+            "GPG")
+                gpg-setup
+                ;;
+            "Email")
+                email-setup
+                ;;
+            "Browser")
+                browser-setup
+                ;;
+            "Tools")
+                MEDIA=(nsxiv mpd mpc mpv)
+                tools-install "Media" ${MEDIA[@]}
+                IOT=(transmission-cli rtorrent youtube-dl wireguard-tools yt-dlp rsync syncthing)
+                tools-install "IoT" ${IOT[@]}
+                READER=(libreoffice-fresh zathura zathura-pdf-mupdf zotero)
+                tools-install "IoT" ${READER[@]}
+                ORGANIZER=(logseq zotero calcurse)
+                tools-install "IoT" ${ORGANIZER[@]}
+                SOCIAL=(telegram-desktop zoom slack)
+                tools-install "IoT" ${SOCIAL[@]}
+                GRAPHICS=(blender gimp inkscape freecad)
+                tools-install "IoT" ${GRAPHICS[@]}
+                DEV=(cmake eigen clang uv)
+                tools-install "IoT" ${DEV[@]}
+                GAMING=(steam)
+                tools-install "IoT" ${GAMING[@]}
                 ;;
         esac
     done
-    #
-    # adduser || error "User exit"
-    # aurhelper || error "User exit"
-    # desktop || error "User exit"
-    # terminal || error "User exit"
-    # shell|| error "User exit"
-    # explorer || error "User exit"
-    # editor || error "User exit"
-    # email || error "User exit"
-    browser || error "User exit"
-    # mediatools || error "User exit"
-    # downtools || error "User exit"
-    # devtools || error "User exit"
 fi
