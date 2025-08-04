@@ -121,7 +121,19 @@ user-add() {
     PASS=$(whiptail --passwordbox "Enter password" 8 78 --title "Add User" 3>&1 1>&2 2>&3) || return
     useradd -m -g wheel -s /bin/zsh "$NAME" >/dev/null 2>&1 || usermod -a -G wheel "$NAME" && mkdir -p /home/"$NAME" && chown "$NAME":wheel /home/"$NAME"
     echo "$NAME:$PASS" | chpasswd
-    unset PASS 
+    unset PASS
+
+    [ -d /home/$NAME/.config ] || sudo -u $NAME mkdir -p /home/$NAME/.config
+    cat >/home/$NAME/.config <<EOF
+        XDG_DESKTOP_DIR=""
+        XDG_DOWNLOAD_DIR="$HOME/downloads"
+        XDG_TEMPLATES_DIR=""
+        XDG_PUBLICSHARE_DIR=""
+        XDG_DOCUMENTS_DIR="$HOME/docs"
+        XDG_MUSIC_DIR="$HOME/music"
+        XDG_PICTURES_DIR="$HOME/pictures"
+        XDG_VIDEOS_DIR="$HOME/videos"
+EOF
 }
 #====================================================================================================
 aurhelper-install() {
@@ -180,6 +192,14 @@ audio-setup() {
 
     # autostart
     [ $INITSYS == "systemd" ] && systemctl start pipewire-pulse.socket
+    [ $INITSYS == "runit" ] && {
+        cat > /etc/pipewire/pipewire.conf.d/user-session.congf <<EOF
+            context.exec = [
+                { path = "/usr/bin/wireplumber" args = "" condition = [ { exec.session-manager = null } { exec.session-manager = true } ] }
+                { path = "/usr/bin/pipewire" args = "-c pipewire-pulse.conf" condition = [ { exec.pipewire-pulse = null } { exec.pipewire-pulse = true } ] }
+            ]
+EOF
+    }
 }
 #====================================================================================================
 bluetooth-setup() {
@@ -337,13 +357,19 @@ editor-setup() {
     PKGS=(
         neovim 
         python-pynvim
+        python-pip
+        npm
+        wget
         ninja
         tree-sitter
-        lua
+        lua51
         luarocks
         lazygit
         xclip
+        ripgrep
+        fd
     )
+    # sudo -u $NAME npm install -g neovim
     pkginstall $NAME ${PKGS[@]} || error "Could not install EDITOR packages."
     if [ ! -d "$REPODIR/dotfiles" ]; then
         cd $REPODIR/dotfiles && sudo -u $NAME stow nvim -t /home/$NAME
@@ -384,7 +410,8 @@ explorer-setup() {
     # install file explorer
     PKGS=(
         lf-git
-        ueberzug
+        # ueberzug
+        ueberzugpp-new-git
     )
     pkginstall $NAME ${PKGS[@]} || error "Could not install EXPLORER packages."
     [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow lf -t /home/$NAME
@@ -410,7 +437,7 @@ browser-setup() {
     }
     ADDONS=$(whiptail --title "Firefox extensions" --separate-output --checklist "Choose extensions" 25 52 16 \
         "ublock-origin" "" OFF \
-        "cookies.txt" "" OFF \
+        "cookies-txt" "" OFF \
         "istilldontcareaboutcookies" "" OFF \
         "auth-helper" "" OFF 3>&1 1>&2 2>&3) || return
     # decentraleyes vim-vixen
@@ -428,7 +455,7 @@ browser-setup() {
 }
 #====================================================================================================
 gpg-setup() {
-    whiptail --title "GPG Key" --yesno "Generate GPG key?" 8 78 || return
+    whiptail --title "GPG Key" --yesno "Generate GPG key?" 8 78 && {
     username || error "Could not get username."
 
     # generate gpg key
@@ -460,7 +487,12 @@ cat >/tmp/gpg-key-params <<EOF
 EOF
     sudo -u $NAME gpg --batch --generate-key /tmp/gpg-key-params
     rm -rf /tmp/gpg-key-params
-    unset KEYTYPE KEYLENGTH REALNAME COMMENT EMAIL KEYVALIDITY PASSPHRASE
+    unset KEYTYPE KEYLENGTH REALNAME COMMENT KEYVALIDITY PASSPHRASE
+    }
+
+    if [ -z ${EMAIL+x} ]; then
+        EMAIL=$(whiptail --inputbox "Enter email to specify GPG" 8 78 3>&1 1>&2 2>&3) || return
+    fi
 
     # install ssh and pam-gnupg
     PKG=(
@@ -474,17 +506,17 @@ EOF
     [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow gpg -t /home/$NAME
 
     # set auth subkey for ssh
-    gpg -K --with-keygrip | awk '
+    gpg -K --with-keygrip $EMAIL | awk '
     /^\s*ssb.*\[E\]/ { in_ssb_e = 1; next }
     in_ssb_e && /Keygrip/ { print $3; exit }
     ' > /home/$NAME/.gnupg/sshcontrol
 
     # activate auth and encrypt key at login
-    gpg -K --with-keygrip | awk '
+    gpg -K --with-keygrip $EMAIL | awk '
     /^\s*ssb.*\[E\]/ { in_ssb_e = 1; next }
     in_ssb_e && /Keygrip/ { print $3; exit }
     ' > /home/$NAME//.pam-gnupg
-    gpg -K --with-keygrip | awk '
+    gpg -K --with-keygrip $EMAIL | awk '
     /^\s*ssb.*\[A\]/ { in_ssb_e = 1; next }
     in_ssb_e && /Keygrip/ { print $3; exit }
     ' > /home/$NAME//.pam-gnupg
@@ -524,12 +556,13 @@ amdcpu-setup() {
 }
 
 nvidiagpu-setup() {
-    PGKS=(nvidia cuda)
+    PGKS=(nvidia)
 }
 
 if [ "${1}" != "--source" ]; then
     DISTRO=$(awk '/DISTRIB_ID=/' /etc/*-release | sed 's/DISTRIB_ID=//' | tr '[:upper:]' '[:lower:]')
     INITSYS=
+    AURHELPER=
     whiptail --title "Install Config" --yesno "Install configuration?" 8 78 || { echo "User exit"; exit; }
     sed -i 's/'#Color'/'Color'/g' /etc/pacman.conf
     pacman --noconfirm --needed -Sy libnewt
@@ -598,18 +631,19 @@ if [ "${1}" != "--source" ]; then
                 tools-install "Media" ${MEDIA[@]}
                 IOT=(transmission-cli rtorrent youtube-dl wireguard-tools yt-dlp rsync syncthing)
                 tools-install "IoT" ${IOT[@]}
-                READER=(libreoffice-fresh zathura zathura-pdf-mupdf zotero)
-                tools-install "IoT" ${READER[@]}
-                ORGANIZER=(logseq zotero calcurse)
-                tools-install "IoT" ${ORGANIZER[@]}
-                SOCIAL=(telegram-desktop zoom slack)
-                tools-install "IoT" ${SOCIAL[@]}
+                READER=(libreoffice-fresh zathura zathura-pdf-mupdf)
+                tools-install "Reader" ${READER[@]}
+                ORGANIZER=(logseq-desktop-bin zotero calcurse)
+                # envsubst < zotero/user.js > path/to/zotero/profile/user.js
+                tools-install "Organizer" ${ORGANIZER[@]}
+                SOCIAL=(telegram-desktop zoom slack-bin)
+                tools-install "Social" ${SOCIAL[@]}
                 GRAPHICS=(blender gimp inkscape freecad)
-                tools-install "IoT" ${GRAPHICS[@]}
-                DEV=(cmake eigen clang uv)
-                tools-install "IoT" ${DEV[@]}
+                tools-install "Graphics" ${GRAPHICS[@]}
+                DEV=(cmake eigen clang uv cuda)
+                tools-install "Dev" ${DEV[@]}
                 GAMING=(steam)
-                tools-install "IoT" ${GAMING[@]}
+                tools-install "Gaming" ${GAMING[@]}
                 ;;
         esac
     done
