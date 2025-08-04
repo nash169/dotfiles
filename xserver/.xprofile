@@ -31,8 +31,13 @@ fi
 # Set background wall (alternatives: variety or nitrogen)
 feh --bg-scale ~/.config/walls/01.png &
 
-# Run xcompmgr for transparency
-xcompmgr &
+autostart="mpd xcompmgr pipewire"
+for program in $autostart; do
+	pidof -sx "$program" || "$program" &
+done >/dev/null 2>&1
+
+# Ensure that xrdb has finished running before moving on to start the WM/DE.
+[ -n "$xrdbpid" ] && wait "$xrdbpid"
 
 # # config, cache and data
 # export XDG_CONFIG_HOME=$HOME/.config
