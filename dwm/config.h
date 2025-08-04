@@ -8,8 +8,8 @@ static const unsigned int snap = 32; /* snap pixel */
 static const int swallowfloating = 0; /* 1 means swallow floating windows by default */
 static const int showbar = 1; /* 0 means no bar */
 static const int topbar = 1; /* 0 means bottom bar */
-static const char* fonts[] = {"JetBrainsMono Nerd Font:size=10"};
-static const char dmenufont[] = "JetBrainsMono Nerd Font:size=10";
+static const char* fonts[] = {"JetBrainsMono Nerd Font:size=12"};
+static const char dmenufont[] = "JetBrainsMono Nerd Font:size=12";
 
 static const char col_gray1[] = "#222222";
 static const char col_gray2[] = "#444444";
@@ -93,6 +93,7 @@ static const char* neomuttcmd[] = {"st", "-e", "neomutt", NULL};
 static const char scratchpadname[] = "scratchpad";
 static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "120x34", NULL };
 static const char *screenshootcmd[] = {"/bin/sh", "-c", "screenshoot", NULL};
+static const char* bookmarkscmd[] = {"bookmarks", NULL};
 
 /* monitor brightness */
 static const char* mon_light_up[] = {"xbacklight", "-inc", "10", NULL};
@@ -134,6 +135,7 @@ static const Key keys[] = {
         { MODKEY,                       XK_l,                       setmfact,       { .f = +0.05 } },
         { MODKEY,                       XK_i,                       incnmaster,     { .i = +1 } },                  // increase number of windows in master
         { MODKEY,                       XK_d,                       incnmaster,     { .i = -1 } },                  // decrease number of windows in master
+        { MODKEY,                       XK_b,                       spawn,          { .v = bookmarkscmd } },
         { MODKEY,                       XK_0,                       view,           { .ui = ~0 } },                 // all windows in one workspace
         { MODKEY,                       XK_comma,                   focusmon,       { .i = -1 } },                  // multi screen options
         { MODKEY,                       XK_period,                  focusmon,       { .i = +1 } },
