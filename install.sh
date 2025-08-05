@@ -234,6 +234,7 @@ desktop-setup() {
         maim        # -> take screenshot
         xautolock   # -> autolock screen
         lm_sensor   # -> temp monitor in status bar
+        # lm_sensors-runit
     )
     pkginstall $NAME ${DESKTOP[@]} || error "Could not install XORG packages."
 
