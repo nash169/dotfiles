@@ -1,3 +1,9 @@
 [submodule "dwm"]
 	path = dwm
 	url = git@github.com:nash169/dwm.git
+[submodule "st"]
+	path = st
+	url = git@github.com:nash169/st.git
+[submodule "slock"]
+	path = slock
+	url = git@github.com:nash169/slock.git
