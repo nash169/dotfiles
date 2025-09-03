@@ -329,13 +329,14 @@ shell-setup() {
     # install shell tools
     PKGS=(
         tmux
-        exa
+        eza
         bat
         ripgrep
         fzf
         htop
         xclip
         qrencode
+        zbar
         pdftk
         zsh
         zsh-completions
@@ -508,7 +509,7 @@ EOF
 
     # set auth subkey for ssh
     gpg -K --with-keygrip $EMAIL | awk '
-    /^\s*ssb.*\[E\]/ { in_ssb_e = 1; next }
+    /^\s*ssb.*\[A\]/ { in_ssb_e = 1; next }
     in_ssb_e && /Keygrip/ { print $3; exit }
     ' > /home/$NAME/.gnupg/sshcontrol
 
@@ -533,7 +534,7 @@ email-setup() {
     whiptail --title "Email Client" --yesno "Install Email Client?" 8 78 || return
     username || { echo "Could not get username"; return; }
     gpg-keygen || { echo "Could not generate GPG key pair"; return; }
-    PKGS=(neomutt isync msmtp pass ca-certificates gettext lynx notmuch abook urlview cronie mutt-wizard-git)
+    PKGS=(neomutt isync msmtp pass pass-otp ca-certificates gettext lynx notmuch abook urlview cronie mutt-wizard-git)
     pkg-install $NAME ${PKGS[@]} || error "Could not install EMAIL packages."
     EMAILID=$(whiptail --title "Email Client" --inputbox "Insert email" 8 78 3>&1 1>&2 2>&3) || return
     IMAPSERVER=$(whiptail --title "Email Client" --inputbox "Insert IMAP server" 8 78 3>&1 1>&2 2>&3) || return
@@ -639,7 +640,7 @@ if [ "${1}" != "--source" ]; then
                 tools-install "Organizer" ${ORGANIZER[@]}
                 SOCIAL=(telegram-desktop zoom slack-bin)
                 tools-install "Social" ${SOCIAL[@]}
-                GRAPHICS=(blender gimp inkscape freecad)
+                GRAPHICS=(blender gimp inkscape ifcopenshell shapely lark freecad)
                 tools-install "Graphics" ${GRAPHICS[@]}
                 DEV=(cmake eigen clang uv cuda)
                 tools-install "Dev" ${DEV[@]}
