@@ -23,6 +23,10 @@ gitssh() {
     GIT_SSH_COMMAND="$COMMAND" git "$@"
 }
 
+gpg-generate() {
+    gpg --expert --full-gen-key
+}
+
 # gpg list keys
 # e.g. gpg-list
 gpg-list() {
@@ -32,7 +36,7 @@ gpg-list() {
 # gpg edit key
 # e.g. gpg-edit <keyid>
 gpg-edit() {
-    gpg --edit-key "$1"
+    gpg --expert --edit-key "$1"
 }
 
 # gpg export qrcode public key (ascii armored output)
