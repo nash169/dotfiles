@@ -630,7 +630,7 @@ if [ "${1}" != "--source" ]; then
             "Tools")
                 MEDIA=(nsxiv mpd mpc mpv)
                 tools-install "Media" ${MEDIA[@]}
-                IOT=(transmission-cli rtorrent youtube-dl wireguard-tools yt-dlp rsync syncthing)
+                IOT=(transmission-cli wireguard-tools yt-dlp rsync syncthing) # rtorrent youtube-dl
                 tools-install "IoT" ${IOT[@]}
                 READER=(libreoffice-fresh zathura zathura-pdf-mupdf)
                 tools-install "Reader" ${READER[@]}
