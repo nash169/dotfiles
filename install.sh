@@ -124,7 +124,7 @@ user-add() {
     unset PASS
 
     [ -d /home/$NAME/.config ] || sudo -u $NAME mkdir -p /home/$NAME/.config
-    cat >/home/$NAME/.config <<EOF
+    cat >/home/$NAME/.config/user-dirs.dirs <<EOF
         XDG_DESKTOP_DIR=""
         XDG_DOWNLOAD_DIR="$HOME/downloads"
         XDG_TEMPLATES_DIR=""
