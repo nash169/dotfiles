@@ -10,3 +10,6 @@
 [submodule "dmenu"]
 	path = dmenu
 	url = git@github.com:nash169/dmenu.git
+[submodule "dwmstatus"]
+	path = dwmstatus
+	url = git@github.com:nash169/dwmstatus.git
