@@ -1,23 +1,2 @@
-# Linux Configuration
+# Dotfiles
 This repository contains my dotfiles.
-
-## ToDo list
-- add auto unlock gpg for slock
-- add image visualization in nvim explorer
-- zsh not working properly in vim mode
-    - https://github.com/LukeSmithxyz/voidrice/blob/master/.config/zsh/.zshrc
-- install and configure syncthing
-- pyright not working
-- set correct lynting opts for python
-- three fingers drag
-- configure bluetooth headset
-- mount external drives
-- dynamic control gaps spacing
-- passmenu with opt support
-- shortcut for wireguard and mount smb
-- create script to auto add your hosts
-
-## useful links
-- https://medium.com/@schtoeffel/you-don-t-need-more-than-one-cursor-in-vim-2c44117d51db
-- https://www.youtube.com/@joseanmartinez/videos
-- https://www.zotero.org/support/kb/multiple_profiles
