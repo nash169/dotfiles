@@ -631,11 +631,11 @@ if [ "${1}" != "--source" ]; then
             "Tools")
                 MEDIA=(nsxiv mpd mpc mpv)
                 tools-install "Media" ${MEDIA[@]}
-                IOT=(transmission-cli wireguard-tools yt-dlp rsync syncthing) # rtorrent youtube-dl
+                IOT=(transmission-cli stig wireguard-tools yt-dlp rsync syncthing) # rtorrent youtube-dl
                 tools-install "IoT" ${IOT[@]}
                 READER=(libreoffice-fresh zathura zathura-pdf-mupdf)
                 tools-install "Reader" ${READER[@]}
-                ORGANIZER=(logseq-desktop-bin zotero calcurse)
+                ORGANIZER=(logseq-desktop-bin zotero calcurse mochi-appimage)
                 # envsubst < zotero/user.js > path/to/zotero/profile/user.js
                 tools-install "Organizer" ${ORGANIZER[@]}
                 SOCIAL=(telegram-desktop zoom slack-bin)
