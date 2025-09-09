@@ -437,6 +437,7 @@ browser-setup() {
         sudo -u $NAME cp $REPODIR/user.js/updater.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh updater.sh <<< $'Y'
         sudo -u $NAME cp $REPODIR/user.js/prefsCleaner.sh $PROFILEDIR && cd $PROFILEDIR && sudo -u $NAME sh prefsCleaner.sh <<< $'1'
     }
+    # temp clone arkenfox/user.js and copy into fox profile user-overrides.js, updater.sh, prefsCleaner.sh
     ADDONS=$(whiptail --title "Firefox extensions" --separate-output --checklist "Choose extensions" 25 52 16 \
         "ublock-origin" "" OFF \
         "cookies-txt" "" OFF \
@@ -632,6 +633,9 @@ if [ "${1}" != "--source" ]; then
                 MEDIA=(nsxiv mpd mpc mpv)
                 tools-install "Media" ${MEDIA[@]}
                 IOT=(transmission-cli stig wireguard-tools yt-dlp rsync syncthing) # rtorrent youtube-dl
+                # insert this line in ~/.config/mimeapps.list under [Default Application] if transmission-cli is requested
+                # x-scheme-handler/magnet=torrent.desktop;
+                # application/x-bittorrent=torrent.desktop;
                 tools-install "IoT" ${IOT[@]}
                 READER=(libreoffice-fresh zathura zathura-pdf-mupdf)
                 tools-install "Reader" ${READER[@]}
