@@ -275,7 +275,7 @@ desktop-setup() {
             User=%i
             Environment=DISPLAY=:0
             ExecStartPre=/usr/bin/xset dpms force suspend
-            ExecStart=/usr/bin/slock
+            ExecStart=/usr/bin/local/slock
 
             [Install]
             WantedBy=sleep.target
