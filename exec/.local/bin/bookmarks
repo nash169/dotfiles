@@ -1,3 +1,3 @@
 #!/bin/sh
 
-xdotool type $(pass bookmarks | dmenu -i -l 50 -m 0 -fn "JetBrainsMono Nerd Font:size=12" -nb "#161821" -nf "#c6c8d1" -sb "#555555" -sf "#cccccc" | cut -d' ' -f1)
+xdotool type $(pass bookmarks | dmenu -i -l 10 -m 0 | cut -d' ' -f1)

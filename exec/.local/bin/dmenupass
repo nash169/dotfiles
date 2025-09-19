@@ -1,4 +1,4 @@
 #!/bin/sh
 
 # SUDO_ASKPASS var
-dmenu -m 0 -fn "JetBrainsMono Nerd Font:size=10" -P -p "$1" <&- && echo
+dmenu -m 0 -P -p "$1" <&- && echo
