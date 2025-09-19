@@ -1,0 +1,8 @@
+#!/bin/bash
+
+HOST=$(:| dmenu -i -p "Host: ")
+REMOTE_FOLDER=$(:| dmenu -i -p "Remote Folder: ")
+LOCAL_FOLDER=$(pwd)
+USER=$(:| dmenu -i -p "User:")
+PASS=$(:| dmenu -P -p "Pass:")
+sudo -A mount --mkdir -t cifs //$HOST/$REMOTE_FOLDER $LOCAL_FOLDER -o username=$USER,password=$PASS,uid=$(id -u),gid=$(id -g)
