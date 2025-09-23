@@ -1,0 +1,4 @@
+#!/bin/sh
+
+CONFIG=$(sudo -A ls /etc/wireguard | cut -d'.' -f1 | dmenu -i -l 10 -m 0) || { echo "User exit"; exit 0; }
+sudo wg-quick up $CONFIG || { echo "Error: cannot connect to $CONFIG"; exit 1; } 
