@@ -1,8 +1,8 @@
 #!/bin/bash
 
-HOST=$(:| dmenu -i -p "Host: ")
-REMOTE_FOLDER=$(:| dmenu -i -p "Remote Folder: ")
+HOST=$(:| dmenu -i -p "Host: ") || { echo "User exit"; exit 1; }
+REMOTE_FOLDER=$(:| dmenu -i -p "Remote Folder: ") || { echo "User exit"; exit 1; }
 LOCAL_FOLDER=$(pwd)
-USER=$(:| dmenu -i -p "User:")
-PASS=$(:| dmenu -P -p "Pass:")
-sudo -A mount --mkdir -t cifs //$HOST/$REMOTE_FOLDER $LOCAL_FOLDER -o username=$USER,password=$PASS,uid=$(id -u),gid=$(id -g)
+USER=$(:| dmenu -i -p "User:") || { echo "User exit"; exit 1; }
+PASS=$(:| dmenu -P -p "Pass:") || { echo "User exit"; exit 1; }
+sudo -A mount --mkdir -t cifs //$HOST/$REMOTE_FOLDER $LOCAL_FOLDER -o username=$USER,password=$PASS,uid=$(id -u),gid=$(id -g) || { echo "User exit"; exit 1; }
