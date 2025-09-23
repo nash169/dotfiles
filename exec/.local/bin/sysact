@@ -16,19 +16,19 @@ echo $(wmpid)
 
 lock(){
     mpc pause
-    pauseallmpv
-    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+    # pauseallmpv
+    # wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
     slock
 }
 
-case "$(printf "🔒 lock\n🚪 leave $WM\n refresh $WM\n🐻 hibernate\n🔃 reboot\n⏻ poweroff\n💤 sleep\n📺 display off" | dmenu -i -p 'Action: ')" in
-	'🔒 lock') lock ;;
+case "$(printf " lock\n leave $WM\n refresh $WM\n⭘ hibernate\n reboot\n⏻ poweroff\n󰤄 sleep\n󰈉 display off" | dmenu -i -p 'Action: ')" in
+	' lock') lock ;;
 	" leave $WM") kill -TERM "$(wmpid)" ;;
 	" refresh $WM") kill -HUP "$(wmpid)" ;;
 	'⭘ hibernate') slock $ctl hibernate -i ;;
 	'󰤄 sleep') slock $ctl suspend -i ;;
 	' reboot') $ctl reboot -i ;;
 	'⏻ poweroff') $ctl poweroff -i ;;
-	'📺 display off') xset dpms force off ;;
+	'󰈉 display off') xset dpms force off ;;
 	*) exit 1 ;;
 esac
