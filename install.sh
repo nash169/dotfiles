@@ -632,7 +632,7 @@ if [ "${1}" != "--source" ]; then
             "Tools")
                 MEDIA=(nsxiv mpd mpc mpv)
                 tools-install "Media" ${MEDIA[@]}
-                IOT=(transmission-cli stig wireguard-tools yt-dlp rsync syncthing) # rtorrent youtube-dl
+                IOT=(transmission-cli stig wireguard-tools yt-dlp rsync syncthing cifs-utils) # rtorrent youtube-dl
                 # insert this line in ~/.config/mimeapps.list under [Default Application] if transmission-cli is requested
                 # x-scheme-handler/magnet=torrent.desktop;
                 # application/x-bittorrent=torrent.desktop;

@@ -2,7 +2,7 @@
 
 HOST=$(:| dmenu -i -p "Host: ") || { echo "User exit"; exit 1; }
 REMOTE_FOLDER=$(:| dmenu -i -p "Remote Folder: ") || { echo "User exit"; exit 1; }
-LOCAL_FOLDER=$(pwd)
+LOCAL_FOLDER=${1:-$(pwd)}
 USER=$(:| dmenu -i -p "User:") || { echo "User exit"; exit 1; }
 PASS=$(:| dmenu -P -p "Pass:") || { echo "User exit"; exit 1; }
 sudo -A mount --mkdir -t cifs //$HOST/$REMOTE_FOLDER $LOCAL_FOLDER -o username=$USER,password=$PASS,uid=$(id -u),gid=$(id -g) || { echo "User exit"; exit 1; }

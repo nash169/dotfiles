@@ -152,17 +152,9 @@ map R bulkrename
 
 # mount smb server
 cmd mountcifs ${{
-    read -p "Mount SMB server in ${fx}? [y/N]" ans
-    if [ "${ans}" == "y" ] || [ "${ans}" == "Y" ]; then
-        set -f
-        read -p "host: " host
-        read -p "folder: " folder
-        read -p "user: " user
-        read -p "pass: " -s pass
-        echo ""
-        sudo mount --mkdir -t cifs //$host/$folder $fx -o username=$user,password=$pass,uid=$(id -u),gid=$(id -g)
-        lf -remote "send reload"
-    fi
+    #read -p "Mount SMB server in ${fx}? [y/N]" ans
+    smbmounter ${fx}
+    lf -remote "send reload"
 }}
 
 cmd umountcifs ${{
