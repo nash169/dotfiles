@@ -2,6 +2,7 @@
 
 # changing "ls" to "eza"
 alias ls='eza -alg --color=always --group-directories-first' # my preferred listing
+alias ll='eza -lg --color=always --group-directories-first' # my preferred listing
 alias lt='eza -aT --color=always --group-directories-first' # tree listing
 
 # fuzzy finder shortcuts
