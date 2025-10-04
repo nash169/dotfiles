@@ -1,3 +1,0 @@
-#!/bin/sh
-
-fd | fzf | xargs realpath | nohup xclip -loops 0 -sel p -sel s -sel c
