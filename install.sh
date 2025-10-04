@@ -275,7 +275,7 @@ desktop-setup() {
             User=%i
             Environment=DISPLAY=:0
             ExecStartPre=/usr/bin/xset dpms force suspend
-            ExecStart=/usr/bin/local/slock
+            ExecStart=/usr/local/bin/slock
 
             [Install]
             WantedBy=sleep.target
@@ -535,7 +535,7 @@ email-setup() {
     whiptail --title "Email Client" --yesno "Install Email Client?" 8 78 || return
     username || { echo "Could not get username"; return; }
     gpg-keygen || { echo "Could not generate GPG key pair"; return; }
-    PKGS=(neomutt isync msmtp pass pass-otp ca-certificates gettext lynx notmuch abook urlview cronie mutt-wizard-git)
+    PKGS=(neomutt isync msmtp pass pass-otp ca-certificates gettext lynx notmuch abook urlview cronie dunst mutt-wizard-git)
     pkg-install $NAME ${PKGS[@]} || error "Could not install EMAIL packages."
     EMAILID=$(whiptail --title "Email Client" --inputbox "Insert email" 8 78 3>&1 1>&2 2>&3) || return
     IMAPSERVER=$(whiptail --title "Email Client" --inputbox "Insert IMAP server" 8 78 3>&1 1>&2 2>&3) || return
