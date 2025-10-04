@@ -7,7 +7,7 @@ declare -i dpi=$(xdpyinfo | grep resolution | sed -r 's/^[^0-9]*([0-9]+).*$/\1/'
 # setxkbmap -layout us # -variant intl
 
 # Adjust keyboard typematic delay and rate
-xset r rate 270 30
+xset r rate 200 50
 
 # Set HiDPI if dpi lower then 100 dpi
 if [ $dpi -le 96 ]; then
