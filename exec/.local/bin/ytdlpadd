@@ -1,0 +1,12 @@
+#!/bin/sh
+
+URL=${1:-"$(xclip -o)"}
+[ -z $URL ] && { echo "No URL provided."; return; }
+
+HEIGHT=${2:-"720"}
+VIDEO=${3:-"mp4"}
+AUDIO=${4:-"m4a"}
+
+yt-dlp -o "$HOME/downloads/%(uploader)s_%(playlist)s_%(title)s.%(ext)s" --format "bv*[ext=${VIDEO}][height<=${HEIGHT}]+ba[ext=${AUDIO}]/b[ext=${VIDEO}]" "${URL}"
+# yt-dlp -o "$HOME/downloads/%(uploader)s_%(playlist)s_%(title)s.%(ext)s" --cookies ${COOKIES} --format "bv*[ext=${VIDEO}][height<=${HEIGHT}]+ba[ext=${AUDIO}]/b[ext=${VIDEO}]" "${URL}"
+# yt-dlp -o "$HOME/downloads/%(uploader)s_%(playlist)s_%(title)s.%(ext)s" --format "bv*[ext=${VIDEO}][height<=${HEIGHT}]+ba[ext=${AUDIO}]/b[ext=${VIDEO}]" "${URL}" --no-playlist
