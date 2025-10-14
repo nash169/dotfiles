@@ -1,0 +1,4 @@
+#!/bin/env perl
+ensure_path("TEXINPUTS", "$ENV{'HOME'}/.config/latexmk/styles//");
+
+$out_dir = "build";

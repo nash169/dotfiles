@@ -1,0 +1,17 @@
+% Define new column type for table
+\@ifpackageloaded{array}{}{\RequirePackage{array}}
+
+% Merge cells vertically
+\@ifpackageloaded{multirow}{}{\RequirePackage{multirow}}
+
+% toprule, midrule, bottomrule for tables
+\@ifpackageloaded{booktabs}{}{\RequirePackage{booktabs}}
+
+% Double horizontal line for table
+\@ifpackageloaded{hhline}{}{\RequirePackage{hhline}}
+
+% For coloring cell table
+\@ifpackageloaded{colortbl}{}{\RequirePackage{colortbl}}
+
+% Table cell style
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
