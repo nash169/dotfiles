@@ -159,8 +159,12 @@
 \newcommand{\x}{\times}
 
 % vector
-\let\textv\v % redefinition: v under letter in text
-\renewcommand{\v}{\relax\ifmmode\@ifstar{\expandafter\boldsymbol}{\expandafter\mathbf}\else\expandafter\textv\fi} % not working
+% \let\textv\v % redefinition: v under letter in text
+\renewcommand{\v}{%
+  \@ifstar
+    {\ifmmode\expandafter\boldsymbol\fi}%
+    {\ifmmode\expandafter\mathbf\else\expandafter\textv\fi}%
+}
 
 % matrix
 \newcommand{\m}{\expandafter\mathbf}
