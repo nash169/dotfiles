@@ -172,6 +172,22 @@
 % set
 \newcommand{\s}{\expandafter\mathcal}
 
+% number set
+\newcommand{\R}{%
+  \@ifnextchar\bgroup
+    {\R@witharg}%
+    {\R@noarg}%
+}
+\newcommand{\R@witharg}[1]{\mathbb{R}^{#1}}
+\newcommand{\R@noarg}{\mathbb{R}}
+\newcommand{\N}{%
+  \@ifnextchar\bgroup
+    {\N@witharg}%
+    {\N@noarg}%
+}
+\newcommand{\N@witharg}[1]{\mathbb{N}^{#1}}
+\newcommand{\N@noarg}{\mathbb{N}}
+
 % function
 \declaremathcommand{\f}{\expandafter\operatorname}
 
