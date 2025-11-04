@@ -630,7 +630,7 @@ if [ "${1}" != "--source" ]; then
                 browser-setup
                 ;;
             "Tools")
-                MEDIA=(nsxiv mpd mpc mpv)
+                MEDIA=(nsxiv mpd ncmpcpp mpc mpv)
                 tools-install "Media" ${MEDIA[@]}
                 IOT=(transmission-cli stig wireguard-tools yt-dlp rsync syncthing cifs-utils) # rtorrent youtube-dl
                 # insert this line in ~/.config/mimeapps.list under [Default Application] if transmission-cli is requested
