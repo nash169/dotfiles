@@ -1,8 +1,8 @@
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 local map = function(keys, func, desc, mode)
-	mode = mode or "n"
-	vim.keymap.set(mode, keys, func, { noremap = true, silent = true, desc = desc })
+    mode = mode or "n"
+    vim.keymap.set(mode, keys, func, { noremap = true, silent = true, desc = desc })
 end
 
 -- Clear highlights on search when pressing <Esc> in normal mode
@@ -39,11 +39,11 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 --  Try it with `yap` in normal mode
 --  See `:help vim.highlight.on_yank()`
 vim.api.nvim_create_autocmd("TextYankPost", {
-	desc = "Highlight when yanking (copying) text",
-	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
-	callback = function()
-		vim.highlight.on_yank()
-	end,
+    desc = "Highlight when yanking (copying) text",
+    group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
+    callback = function()
+        vim.highlight.on_yank()
+    end,
 })
 
 -- buffer
@@ -62,8 +62,10 @@ map("<leader>nr", ":set relativenumber!<CR>", "[N]umber [R]elative")
 vim.keymap.set("n", "<leader>sv", "<C-w>v", { desc = "[S]plit [V]ertically" })
 vim.keymap.set("n", "<leader>sh", "<C-w>s", { desc = "[S]plit [H]orizontally" })
 vim.keymap.set("n", "<leader>sq", "<cmd>close<CR>", { desc = "[S]plit [Q]uit" })
-vim.keymap.set("n", "<C-,>", ":vertical resize -2<CR>")
-vim.keymap.set("n", "<C-.>", ":vertical resize +2<CR>")
+vim.keymap.set("n", "<A-h>", ":vertical resize -2<CR>")
+vim.keymap.set("n", "<A-l>", ":vertical resize +2<CR>")
+vim.keymap.set("n", "<A-j>", ":horizontal resize -2<CR>")
+vim.keymap.set("n", "<A-k>", ":horizontal resize +2<CR>")
 
 -- move text up and down
 map("<S-j>", ":m .+1<CR>==", "Move line down")
