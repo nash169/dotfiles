@@ -9,23 +9,36 @@ declare -i dpi=$(xdpyinfo | grep resolution | sed -r 's/^[^0-9]*([0-9]+).*$/\1/'
 # Adjust keyboard typematic delay and rate
 xset r rate 200 50
 
-# Set HiDPI if dpi lower then 100 dpi
-if [ $dpi -le 96 ]; then
-    # Start Xorg server at this DPI
+# Get dpi
+read px py <<EOF
+$(xrandr | awk '/\*/ {print $1; exit}' | tr 'x' ' ')
+EOF
+read mmx mmy <<EOF
+$(xrandr | awk '/ connected primary/ {print $(NF-2), $NF}' | tr -d 'mm')
+EOF
+if [ -z "$mmx" ]; then
+    read mmx mmy <<EOF
+$(xrandr | awk '/ connected/ {print $(NF-2), $NF; exit}' | tr -d 'mm')
+EOF
+fi
+dpix=$(awk "BEGIN {printf \"%.2f\", ($px * 25.4) / $mmx}")
+dpiy=$(awk "BEGIN {printf \"%.2f\", ($py * 25.4) / $mmy}")
+
+if [ $(printf "%.0f" $dpix) -ge 96 ]; then
     # 96, 120 (25% higher), 144 (50% higher), 168 (75% higher), 192 (100% higher)
     xrandr --dpi 192
 
-    # Merge & load configuration from .Xresources
+    # merge & load configuration from .Xresources
     xrdb -DHIDPI=1 -merge ~/.Xresources
 
-    # Let QT and GTK autodetect retina screen and autoadjust
-    export QT_AUTO_SCREEN_SCALE_FACTOR=1
-    export GDK_SCALE=1
-    export GDK_DPI_SCALE=0.9
-    export GTK_THEME=Adwaita:dark
+#     # Let QT and GTK autodetect retina screen and autoadjust
+#     export QT_AUTO_SCREEN_SCALE_FACTOR=1
+#     export GDK_SCALE=1
+#     export GDK_DPI_SCALE=0.9
+#     export GTK_THEME=Adwaita:dark
 else
-    # Merge & load configuration from .Xresources
-    xrdb -merge ~/.Xresources
+    # merge & load configuration from .xresources
+    xrdb -merge ~/.xresources
 fi
 
 # Set background wall (alternatives: variety or nitrogen)
