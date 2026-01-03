@@ -1,11 +1,27 @@
-#!/bin/sh
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
 
 BOOKMARK=${1:-"$(xclip -o)"}
-FILE=$HOME/.password-store/bookmarks.gpg
+TMP="$(mktemp)"
 
-if grep -q "^$BOOKMARK$" "$FILE"; then
+cleanup() {
+  if command -v shred >/dev/null 2>&1; then
+    shred -u "$TMP" || rm -f "$TMP"
+    [ -f "$TMP~" ] && shred -u "$TMP~" || rm -f "$TMP~"
+  else
+    rm -f "$TMP" && [ -f "$TMP~" ]  && rm -f "$TMP~"
+  fi
+}
+trap cleanup EXIT
+
+pass bookmarks > "$TMP"
+echo $TMP
+
+if grep -q "^$BOOKMARK" "$TMP"; then
 	notify-send "Bookmark already saved."
 else
-	TAG=$(dmenu -i -p 'Bookmark Tag: ')
-	echo "$BOOKMARK >> $FILE 
+	TAG=$(:| dmenu -i -p "Bookmark Tag: ") || { echo "User exit"; exit 1; }
+	echo "${BOOKMARK} # ${TAG}" >> ${TMP}
+	pass insert -m -f bookmarks < "$TMP"
 fi
