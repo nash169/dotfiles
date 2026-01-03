@@ -630,7 +630,7 @@ if [ "${1}" != "--source" ]; then
                 browser-setup
                 ;;
             "Tools")
-                MEDIA=(nsxiv mpd ncmpcpp mpc mpv)
+                MEDIA=(nsxiv mpd mpc rmpc mpv) # ncmpcpp
                 tools-install "Media" ${MEDIA[@]}
                 IOT=(transmission-cli stig wireguard-tools yt-dlp rsync syncthing cifs-utils) # rtorrent youtube-dl
                 # insert this line in ~/.config/mimeapps.list under [Default Application] if transmission-cli is requested
@@ -639,7 +639,7 @@ if [ "${1}" != "--source" ]; then
                 tools-install "IoT" ${IOT[@]}
                 READER=(libreoffice-fresh zathura zathura-pdf-mupdf)
                 tools-install "Reader" ${READER[@]}
-                ORGANIZER=(logseq-desktop-bin zotero calcurse mochi-appimage)
+                ORGANIZER=(logseq-desktop-bin zotero calcurse anki ttf-apple-emoji)
                 # envsubst < zotero/user.js > path/to/zotero/profile/user.js
                 tools-install "Organizer" ${ORGANIZER[@]}
                 SOCIAL=(telegram-desktop zoom slack-bin)
