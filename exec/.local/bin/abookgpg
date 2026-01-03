@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+
+ABOOK_DIR="${HOME}/.abook"
+[ -d $ABOOK_DIR ] || mkdir -p $ABOOK_DIR
+TMP="${ABOOK_DIR}/addressbook"
+
+cleanup() {
+  if command -v shred >/dev/null 2>&1; then
+    shred -u "$TMP" || rm -f "$TMP"
+    [ -f "$TMP~" ] && shred -u "$TMP~" || rm -f "$TMP~"
+  else
+    rm -f "$TMP" && [ -f "$TMP~" ]  && rm -f "$TMP~"
+  fi
+}
+trap cleanup EXIT
+
+pass addressbook > "$TMP"
+
+abook --datafile "$TMP"
+
+pass insert -m -f addressbook < "$TMP"
