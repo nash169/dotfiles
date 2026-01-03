@@ -1,0 +1,11 @@
+#!/bin/sh
+
+BOOKMARK=${1:-"$(xclip -o)"}
+FILE=$HOME/.password-store/bookmarks.gpg
+
+if grep -q "^$BOOKMARK$" "$FILE"; then
+	notify-send "Bookmark already saved."
+else
+	TAG=$(dmenu -i -p 'Bookmark Tag: ')
+	echo "$BOOKMARK >> $FILE 
+fi
