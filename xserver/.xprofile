@@ -31,7 +31,11 @@ fi
 # Set background wall (alternatives: variety or nitrogen)
 feh --bg-scale ~/.config/walls/01.png &
 
-autostart="mpd xcompmgr pipewire"
+
+case "$(readlink -f /sbin/init)" in
+	*systemd*) autostart="xcompmgr" ;;
+	*) autostart="mpd pipewire xcompmgr" ;;
+esac
 for program in $autostart; do
 	pidof -sx "$program" || "$program" &
 done >/dev/null 2>&1
