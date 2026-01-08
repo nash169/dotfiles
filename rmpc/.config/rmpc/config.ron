@@ -19,6 +19,7 @@
         max_size_px: (width: 0, height: 0),
         vertical_align: Top,
         horizontal_align: Center,
+        order: FileFirst
     ),
     cava: (
         framerate: 60,
