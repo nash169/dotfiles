@@ -24,7 +24,7 @@ fi
 dpix=$(awk "BEGIN {printf \"%.2f\", ($px * 25.4) / $mmx}")
 dpiy=$(awk "BEGIN {printf \"%.2f\", ($py * 25.4) / $mmy}")
 
-if [ $(printf "%.0f" $dpix) -ge 96 ]; then
+if [ $(printf "%.0f" $dpix) -ge 150 ]; then
     # 96, 120 (25% higher), 144 (50% higher), 168 (75% higher), 192 (100% higher)
     xrandr --dpi 192
 
@@ -52,6 +52,9 @@ esac
 for program in $autostart; do
 	pidof -sx "$program" || "$program" &
 done >/dev/null 2>&1
+
+# should fix xdotool issue
+setxkbmap
 
 # Ensure that xrdb has finished running before moving on to start the WM/DE.
 [ -n "$xrdbpid" ] && wait "$xrdbpid"
