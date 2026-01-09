@@ -163,10 +163,10 @@ keyboard-setup() {
         Section "InputClass"
                 Identifier "system-keyboard"
                 MatchIsKeyboard "on"
-                Option "XkbLayout" "us"
+                Option "XkbLayout" "us,it"
                 Option "XkbModel" "default"
-                Option "XkbOptions" "ctrl:swapcaps,compose:ralt"
-        EndSectionSection "InputClass"
+                Option "XkbOptions" "ctrl:swapcaps,compose:ralt,grp:ctrl_space_toggle"
+        EndSection
 EOF
 
     # setup console
