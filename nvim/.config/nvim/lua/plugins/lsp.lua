@@ -306,6 +306,7 @@ return {
 			"autopep8", -- python formatter
 			"clang-format", -- c++ formatter
 			"latexindent", -- latex formatter
+			"jupytext", -- jupyter notebook
 			-- "pylint", -- python linter
 		})
 		require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
