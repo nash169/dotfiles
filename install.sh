@@ -639,7 +639,7 @@ if [ "${1}" != "--source" ]; then
                 tools-install "IoT" ${IOT[@]}
                 READER=(libreoffice-fresh zathura zathura-pdf-mupdf)
                 tools-install "Reader" ${READER[@]}
-                ORGANIZER=(logseq-desktop-bin zotero calcurse anki ttf-apple-emoji)
+                ORGANIZER=(logseq-desktop-bin zotero calcurse anki calibre ttf-apple-emoji)
                 # envsubst < zotero/user.js > path/to/zotero/profile/user.js
                 tools-install "Organizer" ${ORGANIZER[@]}
                 SOCIAL=(telegram-desktop zoom slack-bin)
