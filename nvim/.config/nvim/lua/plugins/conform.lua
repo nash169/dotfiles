@@ -31,7 +31,7 @@ return { -- Autoformat
 					lsp_format_opt = "fallback"
 				end
 				return {
-					timeout_ms = 500,
+					timeout_ms = 3000,
 					lsp_format = lsp_format_opt,
 				}
 			end,
@@ -43,6 +43,7 @@ return { -- Autoformat
 				--
 				-- You can use 'stop_after_first' to run the first available formatter from the list
 				css = { "prettierd", "prettier", stop_after_first = true },
+				tex = { "latexindent" },
 			},
 			formatters = {
 				autopep8 = {
