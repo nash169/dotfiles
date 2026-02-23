@@ -78,7 +78,7 @@ scan-qrcode() {
 # rsync copy
 # e.g. rcp <source> <destination>
 rcp() {
-    [ "$#" -lt 2 ] && { echo "Usage: rcp [rsync options] source destination"; return 1 }
+    [ "$#" -lt 2 ] && { echo "Usage: rcp [rsync options] source destination"; return 1; }
     local start end elapsed
 
     start=$(date +%s)
@@ -99,7 +99,7 @@ rcp() {
 # rsync move
 # e.g. rmv <source> <destination>
 rmv() {
-    [ "$#" -lt 2 ] && { echo "Usage: rmv [rsync options] source destination"; return 1 }
+    [ "$#" -lt 2 ] && { echo "Usage: rmv [rsync options] source destination"; return 1; }
     local start end elapsed
 
     start=$(date +%s)
