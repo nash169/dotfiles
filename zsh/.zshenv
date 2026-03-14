@@ -34,4 +34,4 @@ fi
 export GPG_TTY=$(tty)
 
 # sudo
-export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
+[ -f "$HOME/.local/bin/dmenupass" ] && export SUDO_ASKPASS="$HOME/.local/bin/dmenupass"
