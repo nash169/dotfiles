@@ -20,8 +20,16 @@ local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
 
 -- [[ Configure and install plugins ]]
-require("lazy").setup({
+local plugins = {
 	{ import = "plugins.core" },
-	vim.g.enable_optional and { import = "plugins.optional" } or nil,
-	vim.g.enable_theme and { import = "plugins.theme" } or nil,
-})
+}
+
+if vim.g.enable_theme then
+	table.insert(plugins, { import = "plugins.theme" })
+end
+
+if vim.g.enable_optional then
+	table.insert(plugins, { import = "plugins.optional" })
+end
+
+require("lazy").setup(plugins)
