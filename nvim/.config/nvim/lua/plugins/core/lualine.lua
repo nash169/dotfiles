@@ -1,19 +1,23 @@
 return {
 	"nvim-lualine/lualine.nvim",
-	requires = { "nvim-tree/nvim-web-devicons", opt = true },
+	dependencies = { "nvim-tree/nvim-web-devicons" },
 
 	config = function()
-		local theme = require("lualine.themes.tokyonight")
-		theme.normal.c.bg = nil
-
-		require("lualine").setup({
+		local opts = {
 			options = {
-				theme = theme,
 				globalstatus = true,
 				disabled_filetypes = { "NvimTree" },
-				component_separators = { left = '|', right = '|'},
-				section_separators = { left = '', right = ''},
+				component_separators = { left = "|", right = "|" },
+				section_separators = { left = "", right = "" },
 			},
-		})
+		}
+
+		if vim.g.enable_theme then
+			local theme = require("lualine.themes.tokyonight")
+			theme.normal.c.bg = nil
+			opts.options.theme = theme
+		end
+
+		require("lualine").setup(opts)
 	end,
 }
