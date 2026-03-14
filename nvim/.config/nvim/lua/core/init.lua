@@ -61,6 +61,13 @@ require("lazy").setup({
 	{ "christoomey/vim-tmux-navigator", config = function() end, lazy = false },
 	-- colorizer
 	{ "NvChad/nvim-colorizer.lua", event = { "BufReadPre", "BufNewFile" }, config = true },
+	-- markdown preview
+	{
+		"iamcco/markdown-preview.nvim",
+		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+		ft = { "markdown" },
+		build = ":call mkdp#util#install()",
+	},
 	-- plugins
 	{ import = "plugins" },
 })
