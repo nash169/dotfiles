@@ -1,3 +1,6 @@
+vim.g.enable_optional = true
+vim.g.enable_theme = true
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
