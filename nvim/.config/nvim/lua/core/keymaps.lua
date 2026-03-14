@@ -1,8 +1,8 @@
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 local map = function(keys, func, desc, mode)
-    mode = mode or "n"
-    vim.keymap.set(mode, keys, func, { noremap = true, silent = true, desc = desc })
+	mode = mode or "n"
+	vim.keymap.set(mode, keys, func, { noremap = true, silent = true, desc = desc })
 end
 
 -- Clear highlights on search when pressing <Esc> in normal mode
@@ -39,11 +39,11 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 --  Try it with `yap` in normal mode
 --  See `:help vim.highlight.on_yank()`
 vim.api.nvim_create_autocmd("TextYankPost", {
-    desc = "Highlight when yanking (copying) text",
-    group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
-    callback = function()
-        vim.highlight.on_yank()
-    end,
+	desc = "Highlight when yanking (copying) text",
+	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
+	callback = function()
+		vim.highlight.on_yank()
+	end,
 })
 
 -- buffer
@@ -88,3 +88,7 @@ map("<", "<gv", "Remove indentation in visual mode", "v")
 -- map("<S-CR>", "O<Esc>", "Add blank line above", "n")
 vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>k")
 vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>j")
+
+-- Diagnostic keymaps
+vim.keymap.set("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show [D]iagnostics in a floating window" })
+vim.keymap.set("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix [L]ist" })
