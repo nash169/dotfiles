@@ -5,46 +5,13 @@ local map = function(keys, func, desc, mode)
 	vim.keymap.set(mode, keys, func, { noremap = true, silent = true, desc = desc })
 end
 
--- Clear highlights on search when pressing <Esc> in normal mode
---  See `:help hlsearch`
-vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
-
--- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
--- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
--- is not what someone will guess without a bit more experience.
---
+-- base
+map("jk", "<ESC>", "Exit insert mode with jk", "i")
+map("<leader>x", ":qa<CR>", "Close all")
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
-vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
-
--- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
-
--- Keybinds to make split navigation easier.
---  Use CTRL+<hjkl> to switch between windows
---
---  See `:help wincmd` for a list of all window commands
-vim.keymap.set("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus to the left window" })
-vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right window" })
-vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
-vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
-
--- [[ Basic Autocommands ]]
---  See `:help lua-guide-autocommands`
-
--- Highlight when yanking (copying) text
---  Try it with `yap` in normal mode
---  See `:help vim.highlight.on_yank()`
-vim.api.nvim_create_autocmd("TextYankPost", {
-	desc = "Highlight when yanking (copying) text",
-	group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
-	callback = function()
-		vim.highlight.on_yank()
-	end,
-})
+map("<Esc><Esc>", "<C-\\><C-n>", "Exit terminal mode", "t")
+map("<Esc>", "<cmd>nohlsearch<CR>", "Clear highlights on search when pressing <Esc> in normal mode")
 
 -- buffer
 map("<Tab>", ":bnext<CR>", "Move to next buffer")
@@ -52,43 +19,34 @@ map("<S-Tab>", ":bprevious<CR>", "Move to previous buffer")
 map("<leader>bq", ":bprevious | bd #<CR>", "[B]uffer [Q]uit")
 map("<leader>bn", ":enew<CR>", "[B]uffer [N]ew")
 
--- toogle linebreak
+-- view
 map("<leader>lb", ":set wrap! linebreak!<CR>", "[L]ine [B]reak")
-
--- toggle relative number
 map("<leader>nr", ":set relativenumber!<CR>", "[N]umber [R]elative")
+map("<leader>nh", ":set number! norelativenumber<CR>", "[N]umber [H]ide")
 
 -- window
-vim.keymap.set("n", "<leader>sv", "<C-w>v", { desc = "[S]plit [V]ertically" })
-vim.keymap.set("n", "<leader>sh", "<C-w>s", { desc = "[S]plit [H]orizontally" })
-vim.keymap.set("n", "<leader>sq", "<cmd>close<CR>", { desc = "[S]plit [Q]uit" })
-vim.keymap.set("n", "<A-h>", ":vertical resize -2<CR>")
-vim.keymap.set("n", "<A-l>", ":vertical resize +2<CR>")
-vim.keymap.set("n", "<A-j>", ":horizontal resize -2<CR>")
-vim.keymap.set("n", "<A-k>", ":horizontal resize +2<CR>")
+map("<C-h>", "<C-w><C-h>", "Move focus to the left window")
+map("<C-l>", "<C-w><C-l>", "Move focus to the right window")
+map("<C-j>", "<C-w><C-j>", "Move focus to the lower window")
+map("<C-k>", "<C-w><C-k>", "Move focus to the upper window")
+map("<leader>sv", "<C-w>v", "[S]plit [V]ertically")
+map("<leader>sh", "<C-w>s", "[S]plit [H]orizontally")
+map("<leader>sq", "<cmd>close<CR>", "[S]plit [Q]uit")
+map("<A-h>", ":vertical resize -2<CR>", "Vertical decrease window size")
+map("<A-l>", ":vertical resize +2<CR>", "Vertical increase window size")
+map("<A-j>", ":horizontal resize -2<CR>", "Horizontal decrease window size")
+map("<A-k>", ":horizontal resize +2<CR>", "Horizontal increase window size")
 
--- move text up and down
-map("<S-j>", ":m .+1<CR>==", "Move line down")
-map("<S-k>", ":m .-2<CR>==", "Move line up")
-map("<S-j>", ":m '>+1<CR>gv=gv", "Move selection up", "v")
-map("<S-k>", ":m '<-2<CR>gv=gv", "Move selection down", "v")
-
--- use jk to exit insert mode
-vim.keymap.set("i", "jk", "<ESC>", { desc = "Exit insert mode with jk" })
-
--- close all
-map("<leader>x", ":qa<CR>", "Close all")
-
--- indent without leaving visual mode
+-- editing
+map("<A-u>", ":m .+1<CR>==", "Move line up")
+map("<A-d>", ":m .-2<CR>==", "Move line down")
+map("<A-u>", ":m '>+1<CR>gv=gv", "Move selection up", "v")
+map("<A-d>", ":m '<-2<CR>gv=gv", "Move selection down", "v")
 map(">", ">gv", "Add indentation in visual mode", "v")
 map("<", "<gv", "Remove indentation in visual mode", "v")
+map("gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>k", "Add blank line below", "n")
+map("go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>j", "Add blank line above", "n")
 
--- insert new blank line below/above without entering in insert mode
--- map("<CR>", "o<Esc>", "Add blank line below", "n")
--- map("<S-CR>", "O<Esc>", "Add blank line above", "n")
-vim.keymap.set("n", "gO", "<Cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>k")
-vim.keymap.set("n", "go", "<Cmd>call append(line('.'),     repeat([''], v:count1))<CR>j")
-
--- Diagnostic keymaps
-vim.keymap.set("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show [D]iagnostics in a floating window" })
-vim.keymap.set("n", "<leader>dl", vim.diagnostic.setloclist, { desc = "Open [D]iagnostic quickfix [L]ist" })
+-- diagnostic
+map("<leader>dd", vim.diagnostic.open_float, "Show [D]iagnostics in a floating window", "n")
+map("<leader>dl", vim.diagnostic.setloclist, "Open [D]iagnostic quickfix [L]ist", "n")
