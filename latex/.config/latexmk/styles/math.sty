@@ -94,6 +94,10 @@
 % Gradient: \grad{f} for \nabla f
 \DeclareMathOperator{\Grad}{grad}
 
+% Arg min/max
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
 
 %%%%% Delimeters
 
@@ -144,9 +148,9 @@
 \DeclarePairedDelimiter{\normdelim}{\lVert}{\rVert}
 \RegisterPairedDelimiter{\norm}{\normdelim}
 
-% Inner product: \innerp{5}{6} for <5,6>
-\DeclarePairedDelimiterX{\innerpdelim}[3]{\langle}{\rangle}{#1,#2}
-\RegisterPairedDelimiter[2]{\innerp}{\innerpdelim}
+% Inner product: \inner{5}{6} for <5,6>
+\DeclarePairedDelimiterX{\innerdelim}[3]{\langle}{\rangle}{#1,#2}
+\RegisterPairedDelimiter[2]{\inner}{\innerdelim}
 
 
 %%%%% Shortcuts
@@ -161,9 +165,9 @@
 % vector
 % \let\textv\v % redefinition: v under letter in text
 \renewcommand{\v}{%
-  \@ifstar
-    {\ifmmode\expandafter\boldsymbol\fi}%
-    {\ifmmode\expandafter\mathbf\else\expandafter\textv\fi}%
+	\@ifstar
+	{\ifmmode\expandafter\boldsymbol\fi}%
+	{\ifmmode\expandafter\mathbf\else\expandafter\textv\fi}%
 }
 
 % matrix
@@ -177,12 +181,15 @@
 
 % real numbers
 \newcommand{\R}{%
-  \@ifnextchar\bgroup
-    {\R@witharg}%
-    {\R@noarg}%
+	\@ifnextchar\bgroup
+	{\R@witharg}%
+	{\R@noarg}%
 }
 \newcommand{\R@witharg}[1]{\mathbb{R}^{#1}}
 \newcommand{\R@noarg}{\mathbb{R}}
+
+% normal distribution
+\newcommand{\N}{\mathcal{N}}
 
 % function
 \declaremathcommand{\f}{\expandafter\operatorname}
