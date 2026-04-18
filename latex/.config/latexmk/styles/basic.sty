@@ -19,7 +19,17 @@
 \@ifpackageloaded{appendix}{}{\RequirePackage[toc,page]{appendix}}
 
 % ToDo notes
-% \@ifpackageloaded{todonotes}{}{\RequirePackage[textsize=tiny,colorinlistoftodos]{todonotes}}
+\@ifpackageloaded{todonotes}{}{\RequirePackage[textsize=tiny,colorinlistoftodos]{todonotes}}
+\@ifpackageloaded{setspace}{}{\RequirePackage{setspace}}
+\newcounter{comment}
+\newcommand{\comment}[2][]{%
+	% initials of the author (optional) + note in the margin
+	\refstepcounter{comment}%
+	{%
+		\setstretch{0.7}% spacing
+		\todo[color={red!100!green!33},size=\small]{%
+			\textbf{Comment [\uppercase{#1}\thecomment]:}~#2}%
+	}}
 
 % Ref
 \@ifpackageloaded{hyperref}{}{\RequirePackage[colorlinks=true, allcolors=blue]{hyperref}}
