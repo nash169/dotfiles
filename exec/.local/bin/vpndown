@@ -1,4 +1,13 @@
 #!/bin/sh
 
-CONFIG=$(sudo -A ls /etc/wireguard | cut -d'.' -f1 | dmenu -i -l 10 -m 0) || { echo "User exit"; exit 0; }
-sudo wg-quick down $CONFIG || { echo "Error: cannot disconnect from $CONFIG"; exit 1; } 
+# CONFIG=$(sudo -A ls /etc/wireguard | cut -d'.' -f1 | dmenu -i -l 10 -m 0) || { echo "User exit"; exit 0; }
+# sudo wg-quick down $CONFIG || { echo "Error: cannot disconnect from $CONFIG"; exit 1; } 
+
+sudo -A sh -c '
+  list="$(ls /etc/wireguard 2>/dev/null | sed "s/\.conf$//")" || exit 1
+
+  cfg="$(printf "%s\n" "$list" | sudo -u '"$USER"' dmenu -i -l 10 -m 0)" || { echo "User exit"; exit 0; }
+  [ -n "$cfg" ] || { echo "Error no var"; exit 1; }
+
+  exec wg-quick down "$cfg"
+' || { echo "Error: cannot connect to $CONFIG"; exit 1; }
