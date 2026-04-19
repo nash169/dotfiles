@@ -349,6 +349,10 @@ shell-setup() {
     chsh -s /bin/zsh "$NAME" >/dev/null 2>&1
     [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow zsh -t /home/$NAME
     mkdir -p "/home/$NAME/.cache/zsh" && touch "$HISTFILE"
+
+    # tmux
+    sudo -u $NAME git clone https://github.com/tmux-plugins/tpm /home/$NAME.tmux/plugins/tpm
+    [ -d "$REPODIR/dotfiles" ] && cd $REPODIR/dotfiles && sudo -u $NAME stow tmux -t /home/$NAME
 }
 #====================================================================================================
 editor-setup() {
